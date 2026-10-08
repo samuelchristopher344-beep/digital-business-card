@@ -8,9 +8,10 @@ Built with **TanStack Start**, **React 19**, **Tailwind CSS**, **Better Auth**, 
 
 - Live QR code for your profile / contact info
 - Editable profile (name, role, org, links, focus tags)
-- Theme support
+- Theme support (Brass, Signal, Tide, Graphite)
 - vCard / MeCard download & share
-- Local card store with stats tracking
+- Shareable hash-encoded profile links
+- Local card store with templates and stats tracking
 
 ## Stack
 
@@ -28,11 +29,21 @@ npm install
 npm run dev
 ```
 
-App runs on port 8080 by default.
+App runs on port **8080** by default.
 
-## Status
+## What’s in the repo
 
-Core app structure, components, package, configs, and card store have been pushed.  
-Remaining workspace files (full auth stack, scripts, larger libs like `card-model`, main route, vite config, styles) can be pushed on request.
+**Core app (ready):**
+- `src/routes/index.tsx` — main UI (card + QR + profile editor)
+- `src/components/*` — CallingCard, QrMark
+- `src/lib/profile.ts`, `card-model.ts`, `card-store.ts`
+- `src/styles.css`, `vite.config.ts`, `package.json`
+- Auth scaffolding + migration + key scripts
+
+**Still optional to push from workspace:**
+- Full auth client/server (`src/lib/auth/client.ts`, `server.ts`, gates, etc.)
+- `src/lib/db.ts`, `preview-host-bridge.ts`
+- Remaining scripts (PWA, preview, browser smoke tests)
+- `package-lock.json`, screenshots, public install assets
 
 Repo: https://github.com/samuelchristopher344-beep/digital-business-card
