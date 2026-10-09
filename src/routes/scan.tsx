@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Camera, Loader2, ScanLine } from "lucide-react";
 import { parseScannedQr, type ScanResult } from "@/lib/scan-qr";
-import { writeHash, writeStoredProfile } from "@/lib/profile";
+import { encodeProfile, writeStoredProfile } from "@/lib/profile";
 
 export const Route = createFileRoute("/scan")({ component: ScanPage });
 
@@ -42,25 +42,14 @@ function ScanPage() {
         await navigate({ to: "/u/$slug", params: { slug: parsed.slug } });
         return;
       }
+
       if (parsed.kind === "card-hash") {
         writeStoredProfile(parsed.profile);
-        writeHash(parsed.profile);
         const slug = parsed.profile.username || "card";
-        await navigate({
-          to: "/u/$slug",
-          params: { slug },
-          // hash is applied via writeHash on current path; navigate then set hash
-        });
+        const token = encodeProfile(parsed.profile);
+        // Full navigation so /u/$slug picks up the hash profile
         if (typeof window !== "undefined") {
-          window.location.hash = `c=${encodeURIComponent("")}`;
-          // writeHash will set proper token on next tick via profile page load
-          // Force hash on public URL
-          const { encodeProfile } = await import("@/lib/profile");
-          window.history.replaceState(
-            null,
-            "",
-            `/u/${slug}#c=${encodeProfile(parsed.profile)}`,
-          );
+          window.location.assign(`/u/${encodeURIComponent(slug)}#c=${token}`);
         }
         return;
       }
