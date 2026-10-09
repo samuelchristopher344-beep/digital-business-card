@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { TopBar } from "@/components/top-bar";
 import { PrivacyNote } from "@/components/privacy-note";
 import {
   ADDRESS_COUNTRIES,
@@ -32,7 +31,6 @@ function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50">
-      <TopBar title="Settings" />
       <main className="mx-auto max-w-lg px-4 py-8">
         <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
@@ -202,30 +200,14 @@ function SettingsPage() {
             onChange={(e) => update("defaultContactTag", e.target.value as DefaultTag)}
             className="mt-2 h-11 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm dark:border-zinc-700 dark:bg-zinc-900"
           >
-            {({
-              client: "Client",
-              peer: "Peer",
-              hire: "Hiring / job",
-              friend: "Friend",
-              partner: "Partner",
-              vendor: "Vendor",
-              investor: "Investor",
-              other: "Other",
-            } as Record<DefaultTag, string>) &&
-              (Object.entries({
-                client: "Client",
-                peer: "Peer",
-                hire: "Hiring / job",
-                friend: "Friend",
-                partner: "Partner",
-                vendor: "Vendor",
-                investor: "Investor",
-                other: "Other",
-              }) as [DefaultTag, string][]).map(([id, label]) => (
-                <option key={id} value={id}>
-                  {label}
-                </option>
-              ))}
+            <option value="client">Client</option>
+            <option value="peer">Peer</option>
+            <option value="hire">Hiring / job</option>
+            <option value="friend">Friend</option>
+            <option value="partner">Partner</option>
+            <option value="vendor">Vendor</option>
+            <option value="investor">Investor</option>
+            <option value="other">Other</option>
           </select>
           <p className="mt-3 text-sm">
             <Link to="/contacts" className="font-medium underline-offset-2 hover:underline">
