@@ -30,7 +30,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
@@ -49,17 +49,21 @@ jobs:
       - name: Prepare webDir for Capacitor
         run: |
           set -e
-          # TanStack Start + Nitro writes static client assets to .output/public
-          if [ -d .output/public ]; then
+          # Prefer real static output from Nitro/Vercel build, then .output/public, then fallback
+          if [ -d .vercel/output/static ]; then
+            echo "Found .vercel/output/static"
+            mkdir -p .output/public
+            cp -r .vercel/output/static/. .output/public/
+          elif [ -d .output/public ]; then
             echo "Found .output/public"
-            ls -la .output/public | head -20
           else
-            echo "WARNING: .output/public missing after build — creating minimal fallback"
+            echo "WARNING: no static output dir — creating minimal fallback"
             mkdir -p .output/public
             if [ -d dist ]; then
               cp -r dist/. .output/public/ || true
             fi
           fi
+          ls -la .output/public | head -20 || true
           if [ ! -f .output/public/index.html ]; then
             node -e "require('fs').writeFileSync('.output/public/index.html', '<!DOCTYPE html><html><head><meta charset=UTF-8><meta name=viewport content=\\"width=device-width,initial-scale=1\\"><title>Calling Card</title><script>location.replace(\\"https://digital-business-card.vercel.app\\")</script></head><body><p>Loading...</p></body></html>')"
           fi
