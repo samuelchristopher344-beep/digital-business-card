@@ -2,4 +2,12 @@ node_modules/
 .project_id
 .github_repo
 .env
-.env.*
+.env.local
+.env.*.local
+dist/
+.output/
+.vercel/
+android/
+ios/
+*.log
+.DS_Store
