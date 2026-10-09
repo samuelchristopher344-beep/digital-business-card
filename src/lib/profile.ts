@@ -22,9 +22,29 @@ export type Profile = {
   note: string;
   focus: string[];
   theme: ThemeId;
+  /** Public handle used in /u/:slug links */
+  username: string;
 };
 
-export const DEFAULT_PROFILE: Profile = {
+/** Blank profile for new users — never seed someone else's identity. */
+export const EMPTY_PROFILE: Profile = {
+  fullName: "",
+  role: "",
+  organization: "",
+  tagline: "",
+  email: "",
+  phone: "",
+  website: "",
+  location: "",
+  github: "",
+  note: "",
+  focus: [],
+  theme: "brass",
+  username: "",
+};
+
+/** Demo card only — used on /u/demo, not the homepage. */
+export const DEMO_PROFILE: Profile = {
   fullName: "Samuel Christopher",
   role: "Engineering & Innovation",
   organization: "christoflightX-1",
@@ -37,9 +57,14 @@ export const DEFAULT_PROFILE: Profile = {
   note: "Drones, propulsion, marine craft, and future mobility — ideas into prototypes.",
   focus: ["Drones", "Propulsion", "Marine", "Electronics"],
   theme: "brass",
+  username: "demo",
 };
 
+/** @deprecated Prefer EMPTY_PROFILE or DEMO_PROFILE explicitly. */
+export const DEFAULT_PROFILE = DEMO_PROFILE;
+
 const STORAGE_KEY = "calling-card.profile.v1";
+const SLUG_KEY = "calling-card.slug.v1";
 
 const themeSchema = z.enum(["brass", "signal", "tide", "ink"]);
 
@@ -56,6 +81,7 @@ const packedSchema = z.object({
   m: z.string().max(280).optional(),
   f: z.array(z.string().max(24)).max(6).optional(),
   h: themeSchema.optional(),
+  u: z.string().max(40).optional(),
 });
 
 function unpack(data: z.infer<typeof packedSchema>): Profile {
@@ -72,6 +98,7 @@ function unpack(data: z.infer<typeof packedSchema>): Profile {
     note: data.m?.trim() ?? "",
     focus: (data.f ?? []).map((item) => item.trim()).filter(Boolean).slice(0, 6),
     theme: data.h ?? "brass",
+    username: data.u?.trim().toLowerCase() ?? "",
   };
 }
 
@@ -89,6 +116,7 @@ function pack(profile: Profile): z.infer<typeof packedSchema> {
   if (profile.note) packed.m = profile.note;
   if (profile.focus.length) packed.f = profile.focus;
   if (profile.theme !== "brass") packed.h = profile.theme;
+  if (profile.username) packed.u = profile.username;
   return packed;
 }
 
@@ -128,9 +156,19 @@ export function writeHash(profile: Profile) {
   window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}${next}`);
 }
 
+/** Prefer /u/:username when a handle exists; fall back to current path. */
 export function shareUrl(profile: Profile): string {
+  if (typeof window === "undefined") return "";
+  const slug = slugify(profile.username || profile.fullName);
+  if (slug) {
+    return `${window.location.origin}/u/${slug}#c=${encodeProfile(profile)}`;
+  }
   const path = `${window.location.pathname}${window.location.search}`;
   return `${window.location.origin}${path}#c=${encodeProfile(profile)}`;
+}
+
+export function publicCardUrl(profile: Profile): string {
+  return shareUrl(profile);
 }
 
 export function readStoredProfile(): Profile | null {
@@ -147,6 +185,27 @@ export function readStoredProfile(): Profile | null {
 
 export function writeStoredProfile(profile: Profile) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(pack(profile)));
+  if (profile.username) {
+    localStorage.setItem(SLUG_KEY, profile.username);
+  }
+}
+
+export function readStoredSlug(): string | null {
+  try {
+    return localStorage.getItem(SLUG_KEY);
+  } catch {
+    return null;
+  }
+}
+
+/** Turn a name or handle into a URL-safe slug. */
+export function slugify(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40);
 }
 
 export function initials(name: string): string {
@@ -198,59 +257,56 @@ function mecardEsc(value: string): string {
 
 export function toMeCard(profile: Profile): string {
   const { first, last } = splitName(profile.fullName);
-  const parts = ["MECARD:"];
-  const name = last || first ? `${mecardEsc(last)},${mecardEsc(first)}` : "";
-  if (name) parts.push(`N:${name};`);
-  if (profile.phone) parts.push(`TEL:${mecardEsc(profile.phone)};`);
-  if (profile.email) parts.push(`EMAIL:${mecardEsc(profile.email)};`);
+  const parts = [`MECARD:N:${mecardEsc(last)},${mecardEsc(first)}`];
+  if (profile.phone) parts.push(`TEL:${mecardEsc(profile.phone)}`);
+  if (profile.email) parts.push(`EMAIL:${mecardEsc(profile.email)}`);
   const site = hrefForWebsite(profile.website);
-  if (site) parts.push(`URL:${mecardEsc(site)};`);
-  if (profile.organization) parts.push(`ORG:${mecardEsc(profile.organization)};`);
-  const note = profile.role || profile.tagline;
-  if (note) parts.push(`NOTE:${mecardEsc(note)};`);
-  parts.push(";");
-  return parts.join("");
-}
-
-export function hrefForWebsite(value: string): string {
-  const trimmed = value.trim();
-  if (!trimmed) return "";
-  if (/^https?:\/\//i.test(trimmed)) return trimmed;
-  return `https://${trimmed}`;
-}
-
-export function displayHost(value: string): string {
-  const href = hrefForWebsite(value);
-  if (!href) return "";
-  try {
-    return new URL(href).host.replace(/^www\./, "");
-  } catch {
-    return value.trim();
+  if (site) parts.push(`URL:${mecardEsc(site)}`);
+  if (profile.note || profile.tagline) {
+    parts.push(`NOTE:${mecardEsc([profile.tagline, profile.note].filter(Boolean).join(" — "))}`);
   }
-}
-
-export function githubHref(value: string): string {
-  const trimmed = value.trim().replace(/^@/, "");
-  if (!trimmed) return "";
-  if (/^https?:\/\//i.test(trimmed)) return trimmed;
-  return `https://github.com/${trimmed}`;
-}
-
-export function githubLabel(value: string): string {
-  const trimmed = value.trim().replace(/^@/, "");
-  if (!trimmed) return "";
-  if (/^https?:\/\//i.test(trimmed)) {
-    try {
-      const path = new URL(trimmed).pathname.replace(/^\//, "");
-      return path || trimmed;
-    } catch {
-      return trimmed;
-    }
-  }
-  return trimmed;
+  return parts.join(";") + ";;";
 }
 
 export function downloadFileName(profile: Profile): string {
-  const slug = profile.fullName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  return `${slug || "contact"}.vcf`;
+  const base = slugify(profile.fullName || profile.username || "contact") || "contact";
+  return `${base}.vcf`;
+}
+
+export function hrefForWebsite(website: string): string | undefined {
+  const value = website.trim();
+  if (!value) return undefined;
+  if (/^https?:\/\//i.test(value)) return value;
+  return `https://${value}`;
+}
+
+export function displayHost(website: string): string {
+  try {
+    const href = hrefForWebsite(website);
+    if (!href) return website;
+    return new URL(href).host.replace(/^www\./, "");
+  } catch {
+    return website;
+  }
+}
+
+export function githubHref(github: string): string | undefined {
+  const value = github.trim();
+  if (!value) return undefined;
+  if (/^https?:\/\//i.test(value)) return value;
+  return `https://github.com/${value.replace(/^@/, "")}`;
+}
+
+export function githubLabel(github: string): string {
+  const value = github.trim().replace(/^@/, "");
+  if (!value) return "";
+  if (/^https?:\/\//i.test(value)) {
+    try {
+      const path = new URL(value).pathname.replace(/^\//, "");
+      return path || value;
+    } catch {
+      return value;
+    }
+  }
+  return value;
 }
