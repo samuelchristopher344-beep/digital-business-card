@@ -23,6 +23,32 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: emailAndPasswordEnabled,
     minPasswordLength: 8,
+    sendResetPassword: async ({ user, url }) => {
+      // Wire a real mailer (Resend, Postmark, etc.) in production.
+      // Until then we log so local/dev still works for testing the flow.
+      console.info("[auth] Password reset requested",
+        { email: user.email, resetUrl: url },
+      );
+      if (process.env.RESEND_API_KEY && process.env.AUTH_FROM_EMAIL) {
+        try {
+          await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              from: process.env.AUTH_FROM_EMAIL,
+              to: user.email,
+              subject: "Reset your Calling Card password",
+              html: `<p>Hi,</p><p>Reset your password:</p><p><a href="${url}">${url}</a></p><p>If you did not ask for this, ignore this email.</p>`,
+            }),
+          });
+        } catch (err) {
+          console.error("[auth] Failed to send reset email", err);
+        }
+      }
+    },
   },
   session: {
     expiresIn: 60 * 60 * 24 * 7,

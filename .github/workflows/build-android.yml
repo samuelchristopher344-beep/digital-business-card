@@ -49,7 +49,6 @@ jobs:
       - name: Prepare webDir for Capacitor
         run: |
           set -e
-          # Prefer real static output from Nitro/Vercel build, then .output/public, then fallback
           if [ -d .vercel/output/static ]; then
             echo "Found .vercel/output/static"
             mkdir -p .output/public
@@ -65,7 +64,7 @@ jobs:
           fi
           ls -la .output/public | head -20 || true
           if [ ! -f .output/public/index.html ]; then
-            node -e "require('fs').writeFileSync('.output/public/index.html', '<!DOCTYPE html><html><head><meta charset=UTF-8><meta name=viewport content=\\"width=device-width,initial-scale=1\\"><title>Calling Card</title><script>location.replace(\\"https://digital-business-card.vercel.app\\")</script></head><body><p>Loading...</p></body></html>')"
+            node -e "require('fs').writeFileSync('.output/public/index.html', '<!DOCTYPE html><html><head><meta charset=UTF-8><meta name=viewport content=\\"width=device-width,initial-scale=1\\"><title>Calling Card</title><script>location.replace(\\"https://digital-business-card-samuelchristopher344-beep.vercel.app\\")</script></head><body><p>Loading...</p></body></html>')"
           fi
           test -f .output/public/index.html
           echo "webDir ready"
@@ -74,6 +73,31 @@ jobs:
         run: |
           npx cap add android
           npx cap sync android
+
+      - name: Grant camera permission in AndroidManifest
+        run: |
+          python3 << 'PY'
+          from pathlib import Path
+          import re
+          p = Path("android/app/src/main/AndroidManifest.xml")
+          text = p.read_text()
+          if "android.permission.CAMERA" not in text:
+              text = re.sub(
+                  r"(<manifest[^>]*>)",
+                  r"""\1
+      <uses-permission android:name="android.permission.CAMERA" />
+      <uses-permission android:name="android.permission.INTERNET" />
+      <uses-feature android:name="android.hardware.camera" android:required="false" />
+      <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />""",
+                  text,
+                  count=1,
+              )
+              p.write_text(text)
+              print("Patched CAMERA permission into AndroidManifest.xml")
+          else:
+              print("CAMERA permission already present")
+          print(p.read_text()[:800])
+          PY
 
       - name: Build debug APK
         working-directory: android
@@ -93,6 +117,4 @@ jobs:
           echo "### Android APK ready" >> "$GITHUB_STEP_SUMMARY"
           echo "Download the **Calling-Card-debug** artifact from this run." >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "Install on your phone:" >> "$GITHUB_STEP_SUMMARY"
-          echo "1. Download the .apk file" >> "$GITHUB_STEP_SUMMARY"
-          echo "2. Open it on your Android phone (allow install from unknown sources if asked)" >> "$GITHUB_STEP_SUMMARY"
+          echo "Camera permission is included. On first Scan QR, allow Camera when Android asks." >> "$GITHUB_STEP_SUMMARY"

@@ -6,6 +6,18 @@ import { encodeProfile, writeStoredProfile } from "@/lib/profile";
 
 export const Route = createFileRoute("/scan")({ component: ScanPage });
 
+async function requestCameraPermission(): Promise<MediaStream | null> {
+  if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+    throw new Error("This browser or WebView does not support camera access.");
+  }
+  // Explicit permission prompt before starting the scanner
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: { ideal: "environment" } },
+    audio: false,
+  });
+  return stream;
+}
+
 function ScanPage() {
   const navigate = useNavigate();
   const [status, setStatus] = useState<"idle" | "starting" | "scanning" | "error">("idle");
@@ -13,8 +25,17 @@ function ScanPage() {
   const [lastRaw, setLastRaw] = useState("");
   const [result, setResult] = useState<ScanResult | null>(null);
   const scannerRef = useRef<{ stop: () => Promise<void> } | null>(null);
+  const previewStreamRef = useRef<MediaStream | null>(null);
   const handledRef = useRef(false);
   const readerId = "calling-card-qr-reader";
+
+  const releasePreviewStream = useCallback(() => {
+    const stream = previewStreamRef.current;
+    previewStreamRef.current = null;
+    if (stream) {
+      for (const track of stream.getTracks()) track.stop();
+    }
+  }, []);
 
   const stopScanner = useCallback(async () => {
     const s = scannerRef.current;
@@ -26,7 +47,8 @@ function ScanPage() {
         // already stopped
       }
     }
-  }, []);
+    releasePreviewStream();
+  }, [releasePreviewStream]);
 
   const handleDecoded = useCallback(
     async (text: string) => {
@@ -47,13 +69,11 @@ function ScanPage() {
         writeStoredProfile(parsed.profile);
         const slug = parsed.profile.username || "card";
         const token = encodeProfile(parsed.profile);
-        // Full navigation so /u/$slug picks up the hash profile
         if (typeof window !== "undefined") {
           window.location.assign(`/u/${encodeURIComponent(slug)}#c=${token}`);
         }
         return;
       }
-      // mecard / external / unknown stay on page with message
     },
     [navigate, stopScanner],
   );
@@ -67,6 +87,26 @@ function ScanPage() {
 
     try {
       await stopScanner();
+
+      // 1) Force the system permission dialog (browser + Capacitor WebView)
+      try {
+        const stream = await requestCameraPermission();
+        previewStreamRef.current = stream;
+        // Stop tracks so html5-qrcode can re-open the camera cleanly
+        releasePreviewStream();
+      } catch (permErr) {
+        const msg = permErr instanceof Error ? permErr.message : String(permErr);
+        if (/Permission|NotAllowed|denied|SecurityError/i.test(msg)) {
+          throw new Error(
+            "Camera permission denied. On Android: Settings → Apps → Calling Card → Permissions → Camera → Allow. Then tap Start camera again.",
+          );
+        }
+        if (/NotFound|DevicesNotFound/i.test(msg)) {
+          throw new Error("No camera found on this device.");
+        }
+        throw permErr;
+      }
+
       const { Html5Qrcode } = await import("html5-qrcode");
       const scanner = new Html5Qrcode(readerId);
       scannerRef.current = scanner;
@@ -87,7 +127,11 @@ function ScanPage() {
       const message =
         err instanceof Error ? err.message : "Could not open the camera";
       if (/Permission|NotAllowed|denied/i.test(message)) {
-        setError("Camera permission denied. Allow camera access and try again.");
+        setError(
+          message.includes("Settings")
+            ? message
+            : "Camera permission denied. Allow camera access and try again.",
+        );
       } else if (/NotFound|DevicesNotFound/i.test(message)) {
         setError("No camera found on this device.");
       } else {
@@ -95,7 +139,7 @@ function ScanPage() {
       }
       await stopScanner();
     }
-  }, [handleDecoded, stopScanner]);
+  }, [handleDecoded, releasePreviewStream, stopScanner]);
 
   useEffect(() => {
     return () => {
@@ -112,7 +156,7 @@ function ScanPage() {
         <h1 className="mt-2 text-3xl font-semibold tracking-tight">Scan QR</h1>
         <p className="mt-2 text-sm leading-relaxed text-zinc-600">
           Point your camera at a Calling Card QR — from WhatsApp, another phone, or print.
-          Codes from this app open the contact inside the app.
+          Your phone will ask for camera permission the first time.
         </p>
       </header>
 
@@ -121,7 +165,13 @@ function ScanPage() {
         {status === "idle" && !result ? (
           <div className="flex flex-col items-center gap-3 px-6 py-12 text-center text-zinc-300">
             <ScanLine className="size-10 opacity-70" aria-hidden="true" />
-            <p className="text-sm">Camera is off. Tap start to scan.</p>
+            <p className="text-sm">Camera is off. Tap start — allow camera when asked.</p>
+          </div>
+        ) : null}
+        {status === "starting" ? (
+          <div className="flex flex-col items-center gap-3 px-6 py-12 text-center text-zinc-300">
+            <Loader2 className="size-8 animate-spin opacity-70" aria-hidden="true" />
+            <p className="text-sm">Requesting camera permission…</p>
           </div>
         ) : null}
       </div>
@@ -211,7 +261,8 @@ function ScanPage() {
       </div>
 
       <p className="text-center text-xs text-zinc-500">
-        Works best on a phone. Allow camera access when the browser asks.
+        Works best on a phone. Allow camera when the system asks. In the Android app, grant Camera
+        under App permissions if the prompt does not appear.
       </p>
     </main>
   );
