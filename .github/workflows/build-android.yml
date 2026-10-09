@@ -48,6 +48,7 @@ jobs:
 
       - name: Prepare webDir for Capacitor
         run: |
+          set -e
           # TanStack Start + Nitro writes static client assets to .output/public
           if [ -d .output/public ]; then
             echo "Found .output/public"
@@ -56,29 +57,14 @@ jobs:
             echo "WARNING: .output/public missing after build — creating minimal fallback"
             mkdir -p .output/public
             if [ -d dist ]; then
-              cp -r dist/* .output/public/ || true
-            fi
-            if [ ! -f .output/public/index.html ]; then
-              cat > .output/public/index.html << 'EOF'
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Calling Card</title>
-  <script>
-    // Fallback: open the live site if static assets are incomplete
-    window.location.replace('https://digital-business-card.vercel.app');
-  </script>
-</head>
-<body>
-  <p>Loading Calling Card…</p>
-</body>
-</html>
-EOF
+              cp -r dist/. .output/public/ || true
             fi
           fi
-          test -f .output/public/index.html || (echo "No index.html in webDir" && exit 1)
+          if [ ! -f .output/public/index.html ]; then
+            node -e "require('fs').writeFileSync('.output/public/index.html', '<!DOCTYPE html><html><head><meta charset=UTF-8><meta name=viewport content=\\"width=device-width,initial-scale=1\\"><title>Calling Card</title><script>location.replace(\\"https://digital-business-card.vercel.app\\")</script></head><body><p>Loading...</p></body></html>')"
+          fi
+          test -f .output/public/index.html
+          echo "webDir ready"
 
       - name: Add Android platform & sync
         run: |
@@ -100,9 +86,9 @@ EOF
 
       - name: Summary
         run: |
-          echo "### Android APK ready" >> $GITHUB_STEP_SUMMARY
-          echo "Download the **Calling-Card-debug** artifact from this run." >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Install on your phone:" >> $GITHUB_STEP_SUMMARY
-          echo "1. Download the .apk file" >> $GITHUB_STEP_SUMMARY
-          echo "2. Open it on your Android phone (allow install from unknown sources if asked)" >> $GITHUB_STEP_SUMMARY
+          echo "### Android APK ready" >> "$GITHUB_STEP_SUMMARY"
+          echo "Download the **Calling-Card-debug** artifact from this run." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Install on your phone:" >> "$GITHUB_STEP_SUMMARY"
+          echo "1. Download the .apk file" >> "$GITHUB_STEP_SUMMARY"
+          echo "2. Open it on your Android phone (allow install from unknown sources if asked)" >> "$GITHUB_STEP_SUMMARY"
