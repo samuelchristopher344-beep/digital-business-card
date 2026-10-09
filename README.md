@@ -4,6 +4,8 @@ A professional digital business card app with QR codes, contact sharing (vCard /
 
 Built with **TanStack Start**, **React 19**, **Tailwind CSS**, **Zustand**, and optional **Better Auth** + PGLite/Postgres.
 
+**Live site:** https://digital-business-card.vercel.app (or the latest production deployment on Vercel)
+
 ## Features that work (local-first)
 
 - Live QR code for your profile link or MeCard contact payload
@@ -14,24 +16,36 @@ Built with **TanStack Start**, **React 19**, **Tailwind CSS**, **Zustand**, and 
 - Local storage persistence of the profile
 - Responsive layout (mobile → desktop)
 
-## Optional / scaffolding (not fully wired)
+## Phone app (Android)
 
-- Better Auth (Google / X via broker) — scaffolding only; sign-in is disabled by default
-- Remote Postgres / Neon + SQL migrations — present but inactive without `DATABASE_URL`
-- Full multi-card Zustand store (`card-store.ts`) — exists but the main route uses the simpler single-profile flow
-- PWA manifest — lightweight plugin added; no service worker yet
-- Capacitor Android packaging — prepared for, not yet initialized
+Capacitor is fully prepared. You do **not** need a computer with Android Studio.
 
-## Stack
+### Easiest way – download a ready APK
 
-- TanStack Router + Start (SSR-capable)
-- Vite 8 + React 19
-- Tailwind CSS 4
-- Zustand (card store available)
-- `qrcode` for SVG QR generation
-- Better Auth + PGLite / Postgres (optional)
+1. Go to the repository **Actions** tab:  
+   https://github.com/samuelchristopher344-beep/digital-business-card/actions
+2. Open the workflow **Build Android APK**
+3. Click **Run workflow** (or wait for the automatic run after a push)
+4. When it finishes, download the artifact named **Calling-Card-debug**
+5. Open the `.apk` on your Android phone and install it  
+   (you may need to allow “Install from unknown sources”)
 
-## Getting started
+The APK is rebuilt automatically on every relevant push to `main`.
+
+### Alternative – load the live website inside a native shell
+
+If you prefer the native app to always show the latest live website (instead of a bundled static build), edit `capacitor.config.ts` and uncomment the `url` line pointing to your Vercel deployment, then re-run the build workflow.
+
+### Local / cloud development (optional)
+
+```bash
+npm install
+node scripts/setup-capacitor.mjs   # builds + adds Android + syncs
+npx cap open android               # opens Android Studio
+npx cap run android                # run on device/emulator
+```
+
+## Getting started (web)
 
 ```bash
 npm install
@@ -41,7 +55,7 @@ npm run dev
 App runs on port **8080** by default.
 
 ```bash
-npm run build   # production build (skips DB migrate when DATABASE_URL is unset)
+npm run build   # production build
 npm run preview # local production preview
 ```
 
@@ -51,70 +65,31 @@ Copy `.env.example` if you want to experiment with auth later. For the core card
 
 Never commit real secrets.
 
-## Capacitor / Android (phone development)
+## Stack
 
-Because you develop on an Android phone, use a cloud builder rather than a local Android SDK:
-
-1. On a machine (or GitHub Codespaces / Gitpod / a free cloud VM) that has Node:
-
-   ```bash
-   npm install
-   npm run build
-   npx cap init "Calling Card" com.christoflightx.callingcard --web-dir dist
-   npm install @capacitor/core @capacitor/cli @capacitor/android
-   npx cap add android
-   npx cap sync
-   ```
-
-2. Build the web assets into `dist/`, then sync:
-
-   ```bash
-   npm run build
-   npx cap sync android
-   ```
-
-3. To produce an APK/AAB without a local Android Studio install, use one of:
-
-   - **GitHub Actions** with an Android build action (recommended)
-   - **Codemagic**, **Bitrise**, or similar free tiers
-   - A temporary Gitpod / Codespaces instance that installs the Android SDK and runs:
-
-     ```bash
-     cd android
-     ./gradlew assembleDebug          # APK
-     ./gradlew bundleRelease          # AAB (needs signing config)
-     ```
-
-4. Install the resulting APK on your phone via USB, Files app, or a link.
-
-Capacitor config and the `android/` folder are intentionally **not** committed until you run `cap add android` yourself (they are large and machine-specific).
+- TanStack Router + Start (SSR-capable)
+- Vite 8 + React 19
+- Tailwind CSS 4
+- Zustand
+- `qrcode` for SVG QR generation
+- Capacitor 7 (Android packaging)
+- Better Auth + PGLite / Postgres (optional)
 
 ## Repository status
 
-**Core app (ready):**
+**Core app (ready)**  
+Main UI, QR, profile editor, themes, local storage, vCard/MeCard.
 
-- `src/routes/index.tsx` — main UI (card + QR + profile editor)
-- `src/components/*` — CallingCard, QrMark
-- `src/lib/profile.ts`, `card-model.ts`, `card-store.ts`
-- `src/styles.css`, `vite.config.ts`, `package.json`
-- Auth scaffolding + migration + key scripts
+**Capacitor / Android (ready for APK)**  
+- `capacitor.config.ts`  
+- packages + scripts  
+- GitHub Action that produces a downloadable debug APK  
+- `scripts/setup-capacitor.mjs`
 
-**Added / completed in this pass:**
-
-- `scripts/with-app-env.mjs`
-- `scripts/grok-pwa-plugin.mjs` (minimal PWA manifest)
-- `src/lib/db.ts` (safe no-op when auth/DB off)
-- `src/lib/auth/popup.server.ts` (safe stub)
-- `.env.example`
-- Cleaned `package.json` scripts that pointed at missing files
-- Updated `.gitignore`
-
-**Still optional / unfinished:**
-
+**Still optional / unfinished**
 - Full Better Auth client + server wiring
-- Real PGLite bootstrap when auth is enabled
-- Service-worker / full offline PWA
-- Capacitor project files and CI for APK/AAB
-- Multi-card management UI (store exists, main route is single-profile)
+- Real multi-card management UI
+- Full offline PWA service worker
+- iOS platform (can be added the same way)
 
 Repo: https://github.com/samuelchristopher344-beep/digital-business-card
