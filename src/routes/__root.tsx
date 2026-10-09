@@ -1,9 +1,15 @@
 import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
+import { TopBar } from "@/components/top-bar";
+import { initThemeFromStorage } from "@/lib/app-settings";
 import appCss from "../styles.css?url";
 
 const APP_NAME = "Calling Card";
+
+if (typeof window !== "undefined") {
+  initThemeFromStorage();
+}
 
 export const Route = createRootRoute({
   head: () => ({
@@ -13,7 +19,8 @@ export const Route = createRootRoute({
       { title: APP_NAME },
       {
         name: "description",
-        content: "A digital calling card with a live QR code, contact file, and an editable profile.",
+        content:
+          "A digital calling card with QR, contact save, private notes, and clear privacy controls.",
       },
       { name: "theme-color", content: "#ebe4d6" },
     ],
@@ -35,9 +42,10 @@ export const Route = createRootRoute({
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body className="min-h-screen bg-zinc-50 text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-50">
         <PreviewHostBridge />
         <AuthProvider>
+          <TopBar />
           <Outlet />
         </AuthProvider>
         <Scripts />

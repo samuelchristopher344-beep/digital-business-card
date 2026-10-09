@@ -5,8 +5,8 @@ export const Route = createFileRoute("/")({ component: Landing });
 
 function Landing() {
   return (
-    <main className="min-h-screen bg-zinc-50 text-zinc-900">
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-12 px-4 py-12 sm:px-6 sm:py-20">
+    <main className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-12 px-4 py-10 sm:px-6 sm:py-16">
         <header className="flex flex-col gap-6">
           <p className="text-xs font-semibold tracking-[0.2em] text-zinc-500 uppercase">
             Digital business card
@@ -18,21 +18,21 @@ function Landing() {
             <br />
             Not someone else&apos;s.
           </h1>
-          <p className="max-w-xl text-base leading-relaxed text-zinc-600 sm:text-lg">
+          <p className="max-w-xl text-base leading-relaxed text-zinc-600 sm:text-lg dark:text-zinc-400">
             Create a modern calling card in under a minute. Share a clean link or QR code.
             Private notes and tags stay only on your device.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
               to="/create"
-              className="inline-flex h-12 items-center gap-2 rounded-full bg-zinc-900 px-6 text-sm font-medium text-white"
+              className="inline-flex h-12 items-center gap-2 rounded-full bg-zinc-900 px-6 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
             >
               Create your card
               <ArrowRight className="size-4" aria-hidden="true" />
             </Link>
             <Link
               to="/scan"
-              className="inline-flex h-12 items-center gap-2 rounded-full border border-zinc-300 bg-white px-6 text-sm font-medium text-zinc-800"
+              className="inline-flex h-12 items-center gap-2 rounded-full border border-zinc-300 bg-white px-6 text-sm font-medium text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
             >
               <ScanLine className="size-4" aria-hidden="true" />
               Scan QR
@@ -40,7 +40,7 @@ function Landing() {
             <Link
               to="/u/$slug"
               params={{ slug: "demo" }}
-              className="inline-flex h-12 items-center gap-2 rounded-full border border-zinc-300 bg-white px-6 text-sm font-medium text-zinc-800"
+              className="inline-flex h-12 items-center gap-2 rounded-full border border-zinc-300 bg-white px-6 text-sm font-medium text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
             >
               View demo card
             </Link>
@@ -75,9 +75,12 @@ function Landing() {
           />
         </section>
 
-        <section className="rounded-2xl border border-zinc-200 bg-white p-6 sm:p-8">
+        <section className="rounded-2xl border border-zinc-200 bg-white p-6 sm:p-8 dark:border-zinc-800 dark:bg-zinc-900">
           <h2 className="text-lg font-semibold">Tools</h2>
           <div className="mt-4 flex flex-wrap gap-3 text-sm">
+            <Link to="/settings" className="font-medium underline-offset-2 hover:underline">
+              Settings
+            </Link>
             <Link to="/event-mode" className="font-medium underline-offset-2 hover:underline">
               Event mode
             </Link>
@@ -119,10 +122,10 @@ function Feature({
   body: string;
 }) {
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-5">
-      <div className="text-zinc-800">{icon}</div>
+    <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="text-zinc-800 dark:text-zinc-100">{icon}</div>
       <h3 className="mt-3 text-sm font-semibold">{title}</h3>
-      <p className="mt-1.5 text-sm leading-relaxed text-zinc-600">{body}</p>
+      <p className="mt-1.5 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">{body}</p>
     </div>
   );
 }
