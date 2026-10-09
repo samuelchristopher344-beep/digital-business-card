@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, QrCode, Share2, UserPlus } from "lucide-react";
+import { ArrowRight, QrCode, ScanLine, Share2, UserPlus } from "lucide-react";
 
 export const Route = createFileRoute("/")({ component: Landing });
 
@@ -31,6 +31,13 @@ function Landing() {
               <ArrowRight className="size-4" aria-hidden="true" />
             </Link>
             <Link
+              to="/scan"
+              className="inline-flex h-12 items-center gap-2 rounded-full border border-zinc-300 bg-white px-6 text-sm font-medium text-zinc-800"
+            >
+              <ScanLine className="size-4" aria-hidden="true" />
+              Scan QR
+            </Link>
+            <Link
               to="/u/$slug"
               params={{ slug: "demo" }}
               className="inline-flex h-12 items-center gap-2 rounded-full border border-zinc-300 bg-white px-6 text-sm font-medium text-zinc-800"
@@ -40,7 +47,7 @@ function Landing() {
           </div>
         </header>
 
-        <section className="grid gap-4 sm:grid-cols-3">
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Feature
             icon={<UserPlus className="size-5" />}
             title="Start blank"
@@ -50,6 +57,11 @@ function Landing() {
             icon={<QrCode className="size-5" />}
             title="QR + contact file"
             body="Open-card QR, MeCard contact QR, and one-tap .vcf download."
+          />
+          <Feature
+            icon={<ScanLine className="size-5" />}
+            title="Scan in-app"
+            body="Scan a Calling Card QR from WhatsApp or another phone inside this app."
           />
           <Feature
             icon={<Share2 className="size-5" />}
@@ -64,15 +76,17 @@ function Landing() {
             <li>Tap <strong>Create your card</strong> and fill your profile.</li>
             <li>Pick a username — your public page becomes <code className="rounded bg-zinc-100 px-1">/u/username</code>.</li>
             <li>Copy the link or show the QR. Anyone who opens it sees only your card.</li>
+            <li>
+              Someone else using this app can tap <strong>Scan QR</strong> and read your code from
+              WhatsApp or another screen.
+            </li>
           </ol>
-          <p className="mt-4 text-sm text-zinc-500">
-            Profiles are stored in this browser and encoded in the share link.
-            Server accounts (sign-up that works across devices) need a database —
-            see Login when you are ready to connect one.
-          </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link to="/create" className="text-sm font-medium text-zinc-900 underline-offset-2 hover:underline">
               Create card
+            </Link>
+            <Link to="/scan" className="text-sm font-medium text-zinc-900 underline-offset-2 hover:underline">
+              Scan QR
             </Link>
             <Link to="/edit" className="text-sm font-medium text-zinc-900 underline-offset-2 hover:underline">
               Edit my card
