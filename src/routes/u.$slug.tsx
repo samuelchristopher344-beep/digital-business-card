@@ -19,27 +19,63 @@ export const Route = createFileRoute("/u/$slug")({ component: PublicCardPage });
 function PublicCardPage() {
   const { slug } = Route.useParams();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
   const [qrMode, setQrMode] = useState<"card" | "contact">("card");
   const [notice, setNotice] = useState("");
   const [link, setLink] = useState("");
 
   useEffect(() => {
-    const fromHash = readHashProfile();
-    const stored = readStoredProfile();
-    let next: Profile | null = null;
+    let cancelled = false;
 
-    if (fromHash) {
-      next = fromHash;
-    } else if (slug === "demo") {
-      next = DEMO_PROFILE;
-    } else if (stored && (stored.username === slug || !stored.username)) {
-      next = { ...stored, username: stored.username || slug };
+    async function load() {
+      setLoading(true);
+
+      // 1) Server card by username (claimed accounts)
+      if (slug !== "demo") {
+        try {
+          const res = await fetch(`/api/cards/${encodeURIComponent(slug)}`);
+          if (res.ok) {
+            const data = (await res.json()) as { card: Profile };
+            if (!cancelled && data.card) {
+              setProfile(data.card);
+              if (typeof window !== "undefined") {
+                setLink(`${window.location.origin}/u/${slug}`);
+              }
+              setLoading(false);
+              return;
+            }
+          }
+        } catch {
+          // fall through
+        }
+      }
+
+      // 2) Hash-encoded profile / local storage / demo
+      const fromHash = readHashProfile();
+      const stored = readStoredProfile();
+      let next: Profile | null = null;
+
+      if (fromHash) {
+        next = fromHash;
+      } else if (slug === "demo") {
+        next = DEMO_PROFILE;
+      } else if (stored && (stored.username === slug || !stored.username)) {
+        next = { ...stored, username: stored.username || slug };
+      }
+
+      if (!cancelled) {
+        setProfile(next);
+        if (next && typeof window !== "undefined") {
+          setLink(publicCardUrl({ ...next, username: next.username || slug }));
+        }
+        setLoading(false);
+      }
     }
 
-    setProfile(next);
-    if (next && typeof window !== "undefined") {
-      setLink(publicCardUrl({ ...next, username: next.username || slug }));
-    }
+    void load();
+    return () => {
+      cancelled = true;
+    };
   }, [slug]);
 
   useEffect(() => {
@@ -48,13 +84,21 @@ function PublicCardPage() {
     return () => window.clearTimeout(timer);
   }, [notice]);
 
+  if (loading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center text-sm text-zinc-500">
+        Loading…
+      </main>
+    );
+  }
+
   if (profile === null) {
     return (
       <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-4 px-4 text-center">
         <h1 className="text-2xl font-semibold">Card not found</h1>
         <p className="text-sm text-zinc-600">
           No profile is attached to <code className="rounded bg-zinc-100 px-1">/u/{slug}</code>.
-          Create your own card and share the full link (it includes your details).
+          Create your own card and claim a username with a free account.
         </p>
         <Link
           to="/create"
