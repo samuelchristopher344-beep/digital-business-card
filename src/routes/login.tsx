@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { authClient } from "@/lib/auth/client";
 import { emailAndPasswordEnabled } from "@/lib/auth/email-password";
+import { recordLoginAlert } from "@/lib/privacy-vault";
 
 export const Route = createFileRoute("/login")({ component: LoginPage });
 
@@ -26,6 +27,7 @@ function LoginPage() {
         setError(result.error.message || "Sign-in failed. Check your email and password.");
         return;
       }
+      recordLoginAlert("Signed in successfully on this device");
       await navigate({ to: "/edit" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign-in failed.");
@@ -100,8 +102,8 @@ function LoginPage() {
           Create one
         </Link>
         {" · "}
-        <Link to="/create" className="underline-offset-2 hover:underline">
-          Create without account
+        <Link to="/security" className="underline-offset-2 hover:underline">
+          Security
         </Link>
         {" · "}
         <Link to="/" className="underline-offset-2 hover:underline">

@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, QrCode, ScanLine, Share2, UserPlus } from "lucide-react";
+import { ArrowRight, QrCode, ScanLine, Share2, UserPlus, Shield } from "lucide-react";
 
 export const Route = createFileRoute("/")({ component: Landing });
 
@@ -20,7 +20,7 @@ function Landing() {
           </h1>
           <p className="max-w-xl text-base leading-relaxed text-zinc-600 sm:text-lg">
             Create a modern calling card in under a minute. Share a clean link or QR code.
-            Others land on <strong>your</strong> profile — not a seeded demo.
+            Private notes and tags stay only on your device.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
@@ -47,7 +47,7 @@ function Landing() {
           </div>
         </header>
 
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Feature
             icon={<UserPlus className="size-5" />}
             title="Start blank"
@@ -55,43 +55,51 @@ function Landing() {
           />
           <Feature
             icon={<QrCode className="size-5" />}
-            title="QR + contact file"
-            body="Open-card QR, MeCard contact QR, and one-tap .vcf download."
+            title="QR + save on phone"
+            body="Open-card QR, contact QR, and .vcf for Apple & Google Contacts."
+          />
+          <Feature
+            icon={<Shield className="size-5" />}
+            title="Private by default"
+            body="Tags, notes, blocks, and insights are labeled clearly and stay yours."
           />
           <Feature
             icon={<ScanLine className="size-5" />}
             title="Scan in-app"
-            body="Scan a Calling Card QR from WhatsApp or another phone inside this app."
+            body="Scan a Calling Card QR from WhatsApp or another phone."
           />
           <Feature
             icon={<Share2 className="size-5" />}
             title="Shareable link"
-            body="Get a /u/yourname link you can put on socials, email, or print."
+            body="Get a /u/yourname link for socials, email, or print."
           />
         </section>
 
         <section className="rounded-2xl border border-zinc-200 bg-white p-6 sm:p-8">
-          <h2 className="text-lg font-semibold">How it works today</h2>
-          <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-zinc-600">
-            <li>Tap <strong>Create your card</strong> and fill your profile.</li>
-            <li>Pick a username — your public page becomes <code className="rounded bg-zinc-100 px-1">/u/username</code>.</li>
-            <li>Copy the link or show the QR. Anyone who opens it sees only your card.</li>
-            <li>
-              Someone else using this app can tap <strong>Scan QR</strong> and read your code from
-              WhatsApp or another screen.
-            </li>
-          </ol>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link to="/create" className="text-sm font-medium text-zinc-900 underline-offset-2 hover:underline">
-              Create card
+          <h2 className="text-lg font-semibold">Tools</h2>
+          <div className="mt-4 flex flex-wrap gap-3 text-sm">
+            <Link to="/event-mode" className="font-medium underline-offset-2 hover:underline">
+              Event mode
             </Link>
-            <Link to="/scan" className="text-sm font-medium text-zinc-900 underline-offset-2 hover:underline">
-              Scan QR
+            <Link to="/availability" className="font-medium underline-offset-2 hover:underline">
+              Free to chat
             </Link>
-            <Link to="/edit" className="text-sm font-medium text-zinc-900 underline-offset-2 hover:underline">
+            <Link to="/contacts" className="font-medium underline-offset-2 hover:underline">
+              Private contacts
+            </Link>
+            <Link to="/insights" className="font-medium underline-offset-2 hover:underline">
+              Insights
+            </Link>
+            <Link to="/security" className="font-medium underline-offset-2 hover:underline">
+              Security
+            </Link>
+            <Link to="/privacy" className="font-medium underline-offset-2 hover:underline">
+              Privacy center
+            </Link>
+            <Link to="/edit" className="font-medium underline-offset-2 hover:underline">
               Edit my card
             </Link>
-            <Link to="/login" className="text-sm font-medium text-zinc-500 underline-offset-2 hover:underline">
+            <Link to="/login" className="text-zinc-500 underline-offset-2 hover:underline">
               Sign in
             </Link>
           </div>
