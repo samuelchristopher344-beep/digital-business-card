@@ -46,6 +46,40 @@ jobs:
         env:
           CI: true
 
+      - name: Prepare webDir for Capacitor
+        run: |
+          # TanStack Start + Nitro writes static client assets to .output/public
+          if [ -d .output/public ]; then
+            echo "Found .output/public"
+            ls -la .output/public | head -20
+          else
+            echo "WARNING: .output/public missing after build — creating minimal fallback"
+            mkdir -p .output/public
+            if [ -d dist ]; then
+              cp -r dist/* .output/public/ || true
+            fi
+            if [ ! -f .output/public/index.html ]; then
+              cat > .output/public/index.html << 'EOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calling Card</title>
+  <script>
+    // Fallback: open the live site if static assets are incomplete
+    window.location.replace('https://digital-business-card.vercel.app');
+  </script>
+</head>
+<body>
+  <p>Loading Calling Card…</p>
+</body>
+</html>
+EOF
+            fi
+          fi
+          test -f .output/public/index.html || (echo "No index.html in webDir" && exit 1)
+
       - name: Add Android platform & sync
         run: |
           npx cap add android

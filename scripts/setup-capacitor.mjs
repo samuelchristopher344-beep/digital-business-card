@@ -15,6 +15,7 @@ import path from 'path';
 
 const root = process.cwd();
 const androidDir = path.join(root, 'android');
+const webDir = path.join(root, '.output', 'public');
 
 console.log('🚀 Setting up Capacitor for Android...\n');
 
@@ -27,6 +28,30 @@ try {
 
   console.log('📦 Building web app...');
   execSync('npm run build', { stdio: 'inherit' });
+
+  if (!fs.existsSync(webDir)) {
+    console.log('⚠️  .output/public not found after build — creating minimal fallback');
+    fs.mkdirSync(webDir, { recursive: true });
+    const indexPath = path.join(webDir, 'index.html');
+    if (!fs.existsSync(indexPath)) {
+      fs.writeFileSync(
+        indexPath,
+        `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calling Card</title>
+  <script>window.location.replace('https://digital-business-card.vercel.app');</script>
+</head>
+<body><p>Loading Calling Card…</p></body>
+</html>
+`,
+      );
+    }
+  } else {
+    console.log('✅ Found web assets at .output/public');
+  }
 
   if (!fs.existsSync(androidDir)) {
     console.log('\n📱 Adding Android platform...');

@@ -3,11 +3,12 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'com.christoflightx.callingcard',
   appName: 'Calling Card',
-  webDir: 'dist',
+  // TanStack Start + Nitro outputs static assets to .output/public (not dist)
+  webDir: '.output/public',
   server: {
     androidScheme: 'https',
-    // Uncomment the next line if you prefer the native app to always load the live website
-    // (useful while the static build is still being refined):
+    // Uncomment to always load the live website inside the native shell
+    // (useful if the static build is incomplete or you want instant updates):
     // url: 'https://digital-business-card.vercel.app',
   },
   plugins: {
