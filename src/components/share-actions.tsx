@@ -29,7 +29,7 @@ export function ShareActions({ profile, cardKey }: { profile: Profile; cardKey?:
 
   function flash(msg: string) {
     setNotice(msg);
-    window.setTimeout(() => setNotice(""), 2800);
+    window.setTimeout(() => setNotice(""), 3200);
   }
 
   const url = publicCardUrl(profile);
@@ -46,10 +46,21 @@ export function ShareActions({ profile, cardKey }: { profile: Profile; cardKey?:
         return;
       }
       if (r === "aborted") return;
-      // Native sheet unavailable (desktop / limited browsers) → custom sheet
       setSheet("image");
     } catch {
       flash("Could not create image");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onDownloadImage() {
+    setBusy(true);
+    try {
+      await downloadCardImage(profile);
+      flash("Card image saved — check Downloads or Gallery");
+    } catch {
+      flash("Could not save image");
     } finally {
       setBusy(false);
     }
@@ -82,6 +93,9 @@ export function ShareActions({ profile, cardKey }: { profile: Profile; cardKey?:
         </Btn>
         <Btn icon={<Image className="size-4" />} onClick={onShareImage} disabled={busy}>
           {busy ? "Preparing…" : "Share as image"}
+        </Btn>
+        <Btn icon={<Download className="size-4" />} onClick={onDownloadImage} disabled={busy}>
+          {busy ? "Saving…" : "Download card image"}
         </Btn>
         <Btn
           icon={<Download className="size-4" />}
@@ -177,7 +191,7 @@ function ShareSheet({
   async function downloadImage() {
     try {
       await downloadCardImage(profile);
-      onNotice("Card image downloaded — attach it in WhatsApp or anywhere");
+      onNotice("Card image saved — check Downloads or Gallery");
       onClose();
     } catch {
       onNotice("Could not create image");
@@ -202,7 +216,7 @@ function ShareSheet({
             </h2>
             <p className="mt-1 text-sm text-mute">
               {mode === "image"
-                ? "Open WhatsApp or another app, or download the image to attach yourself."
+                ? "Download the image first, then attach it in WhatsApp."
                 : "Pick where to send your calling card link."}
             </p>
           </div>
@@ -254,8 +268,7 @@ function ShareSheet({
 
         {mode === "image" ? (
           <p className="mt-3 text-xs leading-relaxed text-mute">
-            On phones, the system share sheet can send the image file directly to WhatsApp. On
-            desktop, download the image and attach it, or share the link above.
+            Tap Download image. The PNG will be in your phone’s Downloads or Gallery. Then open WhatsApp and attach it.
           </p>
         ) : null}
       </div>
