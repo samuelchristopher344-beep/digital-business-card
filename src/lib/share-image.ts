@@ -111,8 +111,13 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
   const link = typeof window !== "undefined" ? publicCardUrl(profile) : "";
   ctx.fillText((link || "calling card").slice(0, 70), 80, h - 48);
 
+  // Export as JPEG (like Facebook) — smaller file, better mobile gallery support
   return new Promise((resolve, reject) => {
-    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Could not export image"))), "image/png");
+    canvas.toBlob(
+      (b) => (b ? resolve(b) : reject(new Error("Could not export image"))),
+      "image/jpeg",
+      0.92,
+    );
   });
 }
 
@@ -143,14 +148,14 @@ function wrapText(
 /** Force download that works better on mobile browsers. */
 export async function downloadCardImage(profile: Profile) {
   const blob = await renderCardImage(profile);
-  const filename = `${(profile.fullName || "calling-card").replace(/\s+/g, "-").toLowerCase()}.png`;
+  const filename = `${(profile.fullName || "calling-card").replace(/\s+/g, "-").toLowerCase()}.jpg`;
 
   // Try the File System Access API first (Chrome/Edge on desktop + some Android)
   if ("showSaveFilePicker" in window) {
     try {
       const handle = await (window as any).showSaveFilePicker({
         suggestedName: filename,
-        types: [{ description: "PNG image", accept: { "image/png": [".png"] } }],
+        types: [{ description: "JPEG image", accept: { "image/jpeg": [".jpg", ".jpeg"] } }],
       });
       const writable = await handle.createWritable();
       await writable.write(blob);
@@ -161,7 +166,7 @@ export async function downloadCardImage(profile: Profile) {
     }
   }
 
-  // Classic download (works on most phones — file goes to Downloads)
+  // Classic download (works on most phones — file goes to Downloads / Gallery)
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -191,7 +196,7 @@ function canNativeShareFiles(file: File): boolean {
 
 export async function shareCardImage(profile: Profile): Promise<"shared" | "downloaded" | "aborted" | "unsupported"> {
   const blob = await renderCardImage(profile);
-  const file = new File([blob], "calling-card.png", { type: "image/png" });
+  const file = new File([blob], "calling-card.jpg", { type: "image/jpeg" });
   const nav = navigator as Navigator & {
     share?: (d: ShareData) => Promise<void>;
   };
