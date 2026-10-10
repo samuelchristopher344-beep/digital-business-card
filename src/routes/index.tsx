@@ -20,7 +20,7 @@ function Landing() {
             Get back to the room.
           </h1>
           <p className="max-w-xl text-base leading-relaxed text-zinc-600 sm:text-lg dark:text-zinc-400">
-            {PRODUCT_JOB} No feed. No who-viewed-you. No account required to start.
+            {PRODUCT_JOB} Share as image for WhatsApp. Multiple cards. Optional account.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
@@ -39,13 +39,16 @@ function Landing() {
             </Link>
           </div>
           <p className="text-sm text-zinc-500">
-            Already have one?{" "}
-            <Link to="/edit" className="font-medium text-zinc-800 underline-offset-2 hover:underline dark:text-zinc-200">
-              Open editor
+            <Link to="/cards" className="font-medium text-zinc-800 underline-offset-2 hover:underline dark:text-zinc-200">
+              Manage cards
+            </Link>
+            {" · "}
+            <Link to="/edit" className="underline-offset-2 hover:underline">
+              Editor
             </Link>
             {" · "}
             <Link to="/u/$slug" params={{ slug: "demo" }} className="underline-offset-2 hover:underline">
-              See a demo
+              Demo
             </Link>
           </p>
         </header>
@@ -54,7 +57,7 @@ function Landing() {
           <Feature
             icon={<Smartphone className="size-5" />}
             title="Save to the phone"
-            body="One tap to a .vcf for Apple or Google Contacts. That is the job."
+            body="One tap .vcf for Apple or Google Contacts. Share as image for WhatsApp."
           />
           <Feature
             icon={<QrCode className="size-5" />}
@@ -70,34 +73,22 @@ function Landing() {
 
         <section className="rounded-2xl border border-zinc-200 bg-white p-6 sm:p-8 dark:border-zinc-800 dark:bg-zinc-900">
           <h2 className="text-lg font-semibold">How we align with you</h2>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Most of the web optimizes for time spent. We optimize for a completed handoff.
-          </p>
           <ul className="mt-5 space-y-4">
             {PRINCIPLES.map((p) => (
               <li key={p.title}>
-                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">{p.title}</p>
+                <p className="text-sm font-semibold">{p.title}</p>
                 <p className="mt-0.5 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">{p.body}</p>
               </li>
             ))}
           </ul>
-          <p className="mt-6 text-sm">
-            <Link to="/privacy" className="font-medium underline-offset-2 hover:underline">
-              Privacy center
-            </Link>
-            {" · "}
-            <Link to="/settings" className="font-medium underline-offset-2 hover:underline">
-              Settings
-            </Link>
-          </p>
         </section>
 
         <section className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="text-lg font-semibold">Tools when you need them</h2>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Optional. None of these are required to make or share a card.
-          </p>
+          <h2 className="text-lg font-semibold">Tools</h2>
           <div className="mt-4 flex flex-wrap gap-3 text-sm">
+            <Link to="/cards" className="font-medium underline-offset-2 hover:underline">
+              Multi-card
+            </Link>
             <Link to="/event-mode" className="font-medium underline-offset-2 hover:underline">
               Event mode
             </Link>
@@ -108,13 +99,13 @@ function Landing() {
               Private contacts
             </Link>
             <Link to="/insights" className="font-medium underline-offset-2 hover:underline">
-              Anonymous insights
+              Insights
             </Link>
-            <Link to="/security" className="font-medium underline-offset-2 hover:underline">
-              Security
+            <Link to="/settings" className="font-medium underline-offset-2 hover:underline">
+              Settings
             </Link>
-            <Link to="/login" className="text-zinc-500 underline-offset-2 hover:underline">
-              Sign in (optional)
+            <Link to="/privacy" className="font-medium underline-offset-2 hover:underline">
+              Privacy
             </Link>
           </div>
         </section>
