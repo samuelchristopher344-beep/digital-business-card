@@ -30,7 +30,7 @@ function Row({
 }) {
   const body = (
     <>
-      <span className="mt-0.5 text-accent" aria-hidden="true">
+      <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center text-accent" aria-hidden="true">
         {icon}
       </span>
       <span className="min-w-0">
@@ -95,34 +95,34 @@ export function CallingCard({ profile }: { profile: Profile }) {
 
       <ul className="grid gap-3 px-6 py-5 sm:px-7">
         {profile.email ? (
-          <Row href={`mailto:${profile.email}`} icon={<Mail className="size-4" />} label="Email" value={profile.email} />
+          <Row href={`mailto:${profile.email}`} icon={<Mail className="size-5" />} label="Email" value={profile.email} />
         ) : null}
         {fullPhone ? (
-          <Row href={`tel:${fullPhone}`} icon={<Phone className="size-4" />} label="Phone" value={phoneDisplay || fullPhone} />
+          <Row href={`tel:${fullPhone}`} icon={<Phone className="size-5" />} label="Phone" value={phoneDisplay || fullPhone} />
         ) : null}
         {wa ? (
-          <Row href={wa} icon={<MessageCircle className="size-4" />} label="WhatsApp" value={profile.whatsapp} />
+          <Row href={wa} icon={<MessageCircle className="size-5" />} label="WhatsApp" value={profile.whatsapp} />
         ) : null}
         {tg ? (
-          <Row href={tg} icon={<Send className="size-4" />} label="Telegram" value={profile.telegram.replace(/^@/, "")} />
+          <Row href={tg} icon={<Send className="size-5" />} label="Telegram" value={profile.telegram.replace(/^@/, "")} />
         ) : null}
         {li ? (
-          <Row href={li} icon={<Linkedin className="size-4" />} label="LinkedIn" value={profile.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\//i, "")} />
+          <Row href={li} icon={<Linkedin className="size-5" />} label="LinkedIn" value={profile.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\//i, "")} />
         ) : null}
         {ig ? (
-          <Row href={ig} icon={<Instagram className="size-4" />} label="Instagram" value={profile.instagram.replace(/^@/, "")} />
+          <Row href={ig} icon={<Instagram className="size-5" />} label="Instagram" value={profile.instagram.replace(/^@/, "")} />
         ) : null}
         {xLink ? (
-          <Row href={xLink} icon={<Twitter className="size-4" />} label="X" value={profile.x.replace(/^@/, "")} />
+          <Row href={xLink} icon={<Twitter className="size-5" />} label="X" value={profile.x.replace(/^@/, "")} />
         ) : null}
         {site ? (
-          <Row href={site} icon={<Globe className="size-4" />} label="Web" value={displayHost(profile.website)} />
+          <Row href={site} icon={<Globe className="size-5" />} label="Web" value={displayHost(profile.website)} />
         ) : null}
         {profile.location ? (
-          <Row icon={<MapPin className="size-4" />} label="Base" value={profile.location} />
+          <Row icon={<MapPin className="size-5" />} label="Base" value={profile.location} />
         ) : null}
         {github ? (
-          <Row href={github} icon={<Github className="size-4" />} label="GitHub" value={githubLabel(profile.github)} />
+          <Row href={github} icon={<Github className="size-5" />} label="GitHub" value={githubLabel(profile.github)} />
         ) : null}
       </ul>
 
