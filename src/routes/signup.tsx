@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { IdCard, QrCode, Shield } from "lucide-react";
+import { Check, IdCard, Link2, QrCode, Shield, Smartphone } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { emailAndPasswordEnabled } from "@/lib/auth/email-password";
 
@@ -41,26 +41,47 @@ function SignupPage() {
   if (step === "welcome") {
     return (
       <main className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-md flex-col bg-white px-5 dark:bg-zinc-950">
-        <div className="flex flex-1 flex-col items-center justify-center pt-8">
-          <div className="relative mb-10 flex h-40 w-full items-center justify-center">
-            <div className="absolute left-[12%] top-2 flex size-14 items-center justify-center rounded-2xl bg-zinc-900 text-white shadow-lg dark:bg-zinc-100 dark:text-zinc-900">
-              <IdCard className="size-7" aria-hidden />
+        <div className="flex flex-1 flex-col pt-8">
+          <div className="relative mb-8 flex h-32 w-full items-center justify-center">
+            <div className="absolute left-[12%] top-2 flex size-12 items-center justify-center rounded-2xl bg-zinc-900 text-white shadow-lg dark:bg-zinc-100 dark:text-zinc-900">
+              <IdCard className="size-6" aria-hidden />
             </div>
-            <div className="absolute right-[14%] top-0 flex size-12 items-center justify-center rounded-full bg-emerald-500 text-white shadow-md">
-              <Shield className="size-6" aria-hidden />
+            <div className="absolute right-[14%] top-0 flex size-11 items-center justify-center rounded-full bg-emerald-500 text-white shadow-md">
+              <Shield className="size-5" aria-hidden />
             </div>
-            <div className="z-10 flex size-20 items-center justify-center rounded-[1.75rem] bg-zinc-900 text-white shadow-xl dark:bg-zinc-100 dark:text-zinc-900">
-              <QrCode className="size-10" aria-hidden />
+            <div className="z-10 flex size-16 items-center justify-center rounded-[1.5rem] bg-zinc-900 text-white shadow-xl dark:bg-zinc-100 dark:text-zinc-900">
+              <QrCode className="size-8" aria-hidden />
             </div>
-            <div className="absolute bottom-2 left-1/2 size-10 -translate-x-1/2 rounded-full bg-zinc-100 dark:bg-zinc-800" />
           </div>
 
-          <h1 className="text-center text-3xl font-semibold leading-tight tracking-tight text-zinc-900 dark:text-zinc-50">
-            Get started on Calling Card with an account
+          <h1 className="text-center text-2xl font-semibold leading-tight tracking-tight text-zinc-900 dark:text-zinc-50">
+            Why create an account?
           </h1>
-          <p className="mt-4 max-w-sm text-center text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-            An account lets you save your card, claim a username, and open it on any phone — easily
-            and privately.
+          <p className="mt-2 text-center text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+            Optional — only if you want your card on more than one device.
+          </p>
+
+          <ul className="mt-8 space-y-3">
+            <Benefit
+              icon={<Smartphone className="size-4" />}
+              title="Same card on phone and laptop"
+              body="Sign in anywhere and your cards are already there."
+            />
+            <Benefit
+              icon={<Link2 className="size-4" />}
+              title="Claim a stable public link"
+              body="A permanent /u/you link that works after you close the browser."
+            />
+            <Benefit
+              icon={<Shield className="size-4" />}
+              title="Still private"
+              body="No who-viewed list. Notes and tags stay on your device."
+            />
+          </ul>
+
+          <p className="mt-6 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-center text-xs leading-relaxed text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
+            You can keep using Calling Card without an account. Create and share a card in this
+            browser first if you prefer.
           </p>
         </div>
 
@@ -68,21 +89,21 @@ function SignupPage() {
           <button
             type="button"
             onClick={() => setStep("form")}
-            className="flex h-14 w-full items-center justify-center rounded-full bg-blue-600 text-base font-semibold text-white shadow-sm active:scale-[0.99] dark:bg-blue-500"
+            className="flex h-14 w-full items-center justify-center rounded-full bg-zinc-900 text-base font-semibold text-white shadow-sm active:scale-[0.99] dark:bg-zinc-100 dark:text-zinc-900"
           >
-            Get started
+            Create account
           </button>
           <Link
             to="/login"
             className="flex h-14 w-full items-center justify-center rounded-full bg-zinc-100 text-base font-semibold text-zinc-900 active:scale-[0.99] dark:bg-zinc-800 dark:text-zinc-50"
           >
-            Find my account
+            I already have an account
           </Link>
           <Link
             to="/create"
-            className="mt-1 text-center text-sm text-zinc-500 underline-offset-2 hover:underline"
+            className="mt-1 text-center text-sm font-medium text-zinc-600 underline-offset-2 hover:underline dark:text-zinc-400"
           >
-            Continue without an account
+            Continue without an account →
           </Link>
         </div>
       </main>
@@ -103,7 +124,7 @@ function SignupPage() {
           Create your account
         </h1>
         <p className="mt-2 text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-          One account for your card on every device.
+          One account for your card on every device. We only use this to sync your cards.
         </p>
 
         {emailAndPasswordEnabled ? (
@@ -115,7 +136,7 @@ function SignupPage() {
                 autoComplete="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="h-14 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 text-base outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:border-zinc-700 dark:bg-zinc-900"
+                className="h-14 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 text-base outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900"
               />
             </label>
             <label className="flex flex-col gap-1.5">
@@ -126,7 +147,7 @@ function SignupPage() {
                 autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="h-14 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 text-base outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:border-zinc-700 dark:bg-zinc-900"
+                className="h-14 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 text-base outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900"
               />
             </label>
             <label className="flex flex-col gap-1.5">
@@ -140,7 +161,7 @@ function SignupPage() {
                 autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="h-14 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 text-base outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:border-zinc-700 dark:bg-zinc-900"
+                className="h-14 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 text-base outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900"
               />
               <span className="text-xs text-zinc-500">At least 8 characters</span>
             </label>
@@ -154,15 +175,21 @@ function SignupPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex h-14 w-full items-center justify-center rounded-full bg-blue-600 text-base font-semibold text-white disabled:opacity-60 dark:bg-blue-500"
+                className="flex h-14 w-full items-center justify-center rounded-full bg-zinc-900 text-base font-semibold text-white disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900"
               >
-                {loading ? "Creating account…" : "Get started"}
+                {loading ? "Creating account…" : "Create account"}
               </button>
               <Link
                 to="/login"
                 className="flex h-14 w-full items-center justify-center rounded-full bg-zinc-100 text-base font-semibold text-zinc-900 dark:bg-zinc-800 dark:text-zinc-50"
               >
-                Find my account
+                I already have an account
+              </Link>
+              <Link
+                to="/create"
+                className="text-center text-sm text-zinc-500 underline-offset-2 hover:underline"
+              >
+                Continue without an account
               </Link>
             </div>
           </form>
@@ -173,5 +200,30 @@ function SignupPage() {
         )}
       </div>
     </main>
+  );
+}
+
+function Benefit({
+  icon,
+  title,
+  body,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  body: string;
+}) {
+  return (
+    <li className="flex gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-3.5 dark:border-zinc-800 dark:bg-zinc-900">
+      <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-xl bg-white text-zinc-800 shadow-sm dark:bg-zinc-800 dark:text-zinc-100">
+        {icon}
+      </span>
+      <span className="min-w-0">
+        <span className="flex items-center gap-1.5 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+          <Check className="size-3.5 text-emerald-600" aria-hidden />
+          {title}
+        </span>
+        <span className="mt-0.5 block text-sm leading-snug text-zinc-600 dark:text-zinc-400">{body}</span>
+      </span>
+    </li>
   );
 }
