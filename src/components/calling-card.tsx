@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Github, Globe, Mail, MapPin, Phone } from "lucide-react";
+import { Github, Globe, Mail, MapPin, Phone, MessageCircle, Send, Linkedin, Instagram, Twitter } from "lucide-react";
 import {
   CARD_TYPES,
   displayHost,
@@ -9,6 +9,11 @@ import {
   githubLabel,
   hrefForWebsite,
   initials,
+  whatsappHref,
+  telegramHref,
+  linkedinHref,
+  instagramHref,
+  xHref,
   type Profile,
 } from "@/lib/profile";
 
@@ -55,6 +60,11 @@ function Row({
 export function CallingCard({ profile }: { profile: Profile }) {
   const site = hrefForWebsite(profile.website);
   const github = githubHref(profile.github);
+  const wa = whatsappHref(profile.whatsapp);
+  const tg = telegramHref(profile.telegram);
+  const li = linkedinHref(profile.linkedin);
+  const ig = instagramHref(profile.instagram);
+  const xLink = xHref(profile.x);
   const name = profile.fullName.trim() || "Your name";
   const fullPhone = getFullPhone(profile);
   const phoneDisplay = formatPhoneDisplay(profile);
@@ -89,6 +99,21 @@ export function CallingCard({ profile }: { profile: Profile }) {
         ) : null}
         {fullPhone ? (
           <Row href={`tel:${fullPhone}`} icon={<Phone className="size-4" />} label="Phone" value={phoneDisplay || fullPhone} />
+        ) : null}
+        {wa ? (
+          <Row href={wa} icon={<MessageCircle className="size-4" />} label="WhatsApp" value={profile.whatsapp} />
+        ) : null}
+        {tg ? (
+          <Row href={tg} icon={<Send className="size-4" />} label="Telegram" value={profile.telegram.replace(/^@/, "")} />
+        ) : null}
+        {li ? (
+          <Row href={li} icon={<Linkedin className="size-4" />} label="LinkedIn" value={profile.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\//i, "")} />
+        ) : null}
+        {ig ? (
+          <Row href={ig} icon={<Instagram className="size-4" />} label="Instagram" value={profile.instagram.replace(/^@/, "")} />
+        ) : null}
+        {xLink ? (
+          <Row href={xLink} icon={<Twitter className="size-4" />} label="X" value={profile.x.replace(/^@/, "")} />
         ) : null}
         {site ? (
           <Row href={site} icon={<Globe className="size-4" />} label="Web" value={displayHost(profile.website)} />
