@@ -1,6 +1,16 @@
+import { toDataURL } from "qrcode";
 import { publicCardUrl, formatPhoneDisplay, getFullPhone, type Profile } from "./profile";
 
-/** Draw a clear, shareable card image that looks like the real card. */
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("Could not load QR image"));
+    img.src = src;
+  });
+}
+
+/** Draw a clear, shareable card image that looks like the real card + QR code. */
 export async function renderCardImage(profile: Profile): Promise<Blob> {
   const w = 1080;
   const h = 1350;
@@ -78,11 +88,8 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
   ctx.stroke();
   ctx.globalAlpha = 1;
 
-  // Contact rows
-  let y = 720;
-  ctx.font = "400 28px system-ui, sans-serif";
-  ctx.fillStyle = t.fg;
-
+  // Contact rows (leave room at bottom for QR)
+  let y = 700;
   const phone = formatPhoneDisplay(profile) || getFullPhone(profile);
   const rows: [string, string][] = [];
   if (profile.email) rows.push(["Email", profile.email]);
@@ -95,23 +102,59 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
   if (profile.website) rows.push(["Web", profile.website]);
   if (profile.location) rows.push(["Base", profile.location]);
 
-  for (const [label, value] of rows.slice(0, 8)) {
+  // Max 5 contact rows so QR has space
+  for (const [label, value] of rows.slice(0, 5)) {
     ctx.fillStyle = t.mute;
     ctx.font = "500 18px system-ui, sans-serif";
     ctx.fillText(label.toUpperCase(), 80, y);
     ctx.fillStyle = t.fg;
     ctx.font = "400 28px system-ui, sans-serif";
     ctx.fillText(value.slice(0, 42), 80, y + 32);
-    y += 72;
+    y += 68;
   }
 
-  // Footer
-  ctx.fillStyle = t.mute;
-  ctx.font = "400 20px system-ui, sans-serif";
+  // —— QR code (bottom center) ——
   const link = typeof window !== "undefined" ? publicCardUrl(profile) : "";
-  ctx.fillText((link || "calling card").slice(0, 70), 80, h - 48);
+  const qrValue = link || "https://calling-card.app";
 
-  // Export as JPEG (like Facebook) — smaller file, better mobile gallery support
+  try {
+    const qrDataUrl = await toDataURL(qrValue, {
+      margin: 1,
+      width: 320,
+      errorCorrectionLevel: "M",
+      color: {
+        dark: "#111111",
+        light: "#ffffff",
+      },
+    });
+    const qrImg = await loadImage(qrDataUrl);
+
+    const qrSize = 280;
+    const qrX = (w - qrSize) / 2;
+    const qrY = h - qrSize - 120;
+
+    // White rounded background so QR stays high-contrast on any theme
+    const pad = 20;
+    ctx.fillStyle = "#ffffff";
+    roundRect(ctx, qrX - pad, qrY - pad, qrSize + pad * 2, qrSize + pad * 2, 24);
+    ctx.fill();
+
+    ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+
+    // Label under QR
+    ctx.fillStyle = t.mute;
+    ctx.font = "500 20px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Scan to open card", w / 2, qrY + qrSize + pad + 28);
+    ctx.textAlign = "left";
+  } catch {
+    // If QR fails, still export the card with the link as text
+    ctx.fillStyle = t.mute;
+    ctx.font = "400 20px system-ui, sans-serif";
+    ctx.fillText((link || "calling card").slice(0, 70), 80, h - 48);
+  }
+
+  // Export as JPEG — smaller file, better mobile gallery support
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (b) => (b ? resolve(b) : reject(new Error("Could not export image"))),
@@ -119,6 +162,23 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
       0.92,
     );
   });
+}
+
+function roundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number,
+) {
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.arcTo(x + width, y, x + width, y + height, radius);
+  ctx.arcTo(x + width, y + height, x, y + height, radius);
+  ctx.arcTo(x, y + height, x, y, radius);
+  ctx.arcTo(x, y, x + width, y, radius);
+  ctx.closePath();
 }
 
 function wrapText(
