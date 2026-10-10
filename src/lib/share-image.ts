@@ -92,14 +92,37 @@ export async function downloadCardImage(profile: Profile) {
   URL.revokeObjectURL(url);
 }
 
-export async function shareCardImage(profile: Profile): Promise<"shared" | "downloaded" | "aborted"> {
+function canNativeShareFiles(file: File): boolean {
+  const nav = navigator as Navigator & {
+    canShare?: (d: { files: File[] }) => boolean;
+    share?: (d: ShareData) => Promise<void>;
+  };
+  if (!nav.share) return false;
+  try {
+    if (typeof nav.canShare === "function") {
+      return nav.canShare({ files: [file] });
+    }
+    // Some browsers expose share but not canShare; try optimistically on mobile
+    return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Prefer the OS share sheet (WhatsApp, etc.). Returns:
+ * - "shared" when the native sheet was used successfully
+ * - "aborted" when the user cancelled
+ * - "unsupported" when native file share is not available (caller should show custom sheet)
+ */
+export async function shareCardImage(profile: Profile): Promise<"shared" | "downloaded" | "aborted" | "unsupported"> {
   const blob = await renderCardImage(profile);
   const file = new File([blob], "calling-card.png", { type: "image/png" });
   const nav = navigator as Navigator & {
-    canShare?: (d: { files: File[] }) => boolean;
-    share?: (d: { files?: File[]; title?: string; text?: string; url?: string }) => Promise<void>;
+    share?: (d: ShareData) => Promise<void>;
   };
-  if (nav.share && nav.canShare?.({ files: [file] })) {
+
+  if (canNativeShareFiles(file) && nav.share) {
     try {
       await nav.share({
         files: [file],
@@ -110,8 +133,28 @@ export async function shareCardImage(profile: Profile): Promise<"shared" | "down
       return "shared";
     } catch (e) {
       if (e instanceof DOMException && e.name === "AbortError") return "aborted";
+      // fall through to unsupported so UI can show the custom sheet
     }
   }
-  await downloadCardImage(profile);
-  return "downloaded";
+  return "unsupported";
+}
+
+/** Try native share for a link; returns true if the OS sheet opened. */
+export async function tryNativeShareLink(opts: {
+  title: string;
+  text?: string;
+  url: string;
+}): Promise<"shared" | "aborted" | "unsupported"> {
+  if (!navigator.share) return "unsupported";
+  try {
+    await navigator.share({
+      title: opts.title,
+      text: opts.text,
+      url: opts.url,
+    });
+    return "shared";
+  } catch (e) {
+    if (e instanceof DOMException && e.name === "AbortError") return "aborted";
+    return "unsupported";
+  }
 }
