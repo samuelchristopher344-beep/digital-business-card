@@ -13,7 +13,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 /** Draw a clear, shareable card image that looks like the real card + QR code. */
 export async function renderCardImage(profile: Profile): Promise<Blob> {
   const w = 1080;
-  const h = 1350;
+  const h = 1480; // slightly taller so large QR has room without covering details
   const canvas = document.createElement("canvas");
   canvas.width = w;
   canvas.height = h;
@@ -88,8 +88,9 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
   ctx.stroke();
   ctx.globalAlpha = 1;
 
-  // Contact rows (leave room at bottom for QR)
+  // Contact rows — stop well above the QR zone
   let y = 700;
+  const contactBottomLimit = 980; // QR starts below this
   const phone = formatPhoneDisplay(profile) || getFullPhone(profile);
   const rows: [string, string][] = [];
   if (profile.email) rows.push(["Email", profile.email]);
@@ -102,25 +103,26 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
   if (profile.website) rows.push(["Web", profile.website]);
   if (profile.location) rows.push(["Base", profile.location]);
 
-  // Max 5 contact rows so QR has space
-  for (const [label, value] of rows.slice(0, 5)) {
+  for (const [label, value] of rows) {
+    if (y + 60 > contactBottomLimit) break;
     ctx.fillStyle = t.mute;
     ctx.font = "500 18px system-ui, sans-serif";
     ctx.fillText(label.toUpperCase(), 80, y);
     ctx.fillStyle = t.fg;
     ctx.font = "400 28px system-ui, sans-serif";
     ctx.fillText(value.slice(0, 42), 80, y + 32);
-    y += 68;
+    y += 64;
   }
 
-  // —— QR code (bottom center) ——
+  // —— Large QR code, low on the card (scannable, clear of details) ——
   const link = typeof window !== "undefined" ? publicCardUrl(profile) : "";
   const qrValue = link || "https://calling-card.app";
 
   try {
+    // Generate high-res QR (400px source) then draw large on canvas
     const qrDataUrl = await toDataURL(qrValue, {
-      margin: 1,
-      width: 320,
+      margin: 2,
+      width: 400,
       errorCorrectionLevel: "M",
       color: {
         dark: "#111111",
@@ -129,29 +131,30 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
     });
     const qrImg = await loadImage(qrDataUrl);
 
-    const qrSize = 280;
+    const qrSize = 360; // large enough to scan easily from a phone photo
+    const pad = 28;
     const qrX = (w - qrSize) / 2;
-    const qrY = h - qrSize - 120;
+    // Sit near the bottom with room for the label
+    const qrY = h - qrSize - pad * 2 - 56;
 
-    // White rounded background so QR stays high-contrast on any theme
-    const pad = 20;
+    // White rounded plate so QR stays high-contrast on every theme
     ctx.fillStyle = "#ffffff";
-    roundRect(ctx, qrX - pad, qrY - pad, qrSize + pad * 2, qrSize + pad * 2, 24);
+    roundRect(ctx, qrX - pad, qrY - pad, qrSize + pad * 2, qrSize + pad * 2, 28);
     ctx.fill();
 
     ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
 
-    // Label under QR
+    // Label under QR only — no long URL over the code
     ctx.fillStyle = t.mute;
-    ctx.font = "500 20px system-ui, sans-serif";
+    ctx.font = "500 22px system-ui, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("Scan to open card", w / 2, qrY + qrSize + pad + 28);
+    ctx.fillText("Scan to open card", w / 2, qrY + qrSize + pad + 34);
     ctx.textAlign = "left";
   } catch {
-    // If QR fails, still export the card with the link as text
+    // Fallback: short link text at the very bottom if QR fails
     ctx.fillStyle = t.mute;
     ctx.font = "400 20px system-ui, sans-serif";
-    ctx.fillText((link || "calling card").slice(0, 70), 80, h - 48);
+    ctx.fillText((link || "calling card").slice(0, 70), 80, h - 40);
   }
 
   // Export as JPEG — smaller file, better mobile gallery support
@@ -210,7 +213,6 @@ export async function downloadCardImage(profile: Profile) {
   const blob = await renderCardImage(profile);
   const filename = `${(profile.fullName || "calling-card").replace(/\s+/g, "-").toLowerCase()}.jpg`;
 
-  // Try the File System Access API first (Chrome/Edge on desktop + some Android)
   if ("showSaveFilePicker" in window) {
     try {
       const handle = await (window as any).showSaveFilePicker({
@@ -226,7 +228,6 @@ export async function downloadCardImage(profile: Profile) {
     }
   }
 
-  // Classic download (works on most phones — file goes to Downloads / Gallery)
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
