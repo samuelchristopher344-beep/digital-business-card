@@ -96,6 +96,41 @@
   border-radius: var(--radius-card);
 }
 
+/* Card theme colors (applied via data-theme on main) */
+[data-theme="brass"] {
+  --card-bg: #1c1915;
+  --card-fg: #f6f1e8;
+  --card-mute: #d2c8bc;
+  --card-line: rgb(255 255 255 / 0.14);
+  --accent: #c6a36e;
+}
+[data-theme="signal"] {
+  --card-bg: #12181f;
+  --card-fg: #e8f0f5;
+  --card-mute: #b7c6ce;
+  --card-line: rgb(255 255 255 / 0.12);
+  --accent: #7dbeb8;
+}
+[data-theme="tide"] {
+  --card-bg: #0f1c1a;
+  --card-fg: #e6f4f2;
+  --card-mute: #a8d5d0;
+  --card-line: rgb(255 255 255 / 0.12);
+  --accent: #5aa8a0;
+}
+[data-theme="ink"] {
+  --card-bg: #111111;
+  --card-fg: #f5f5f5;
+  --card-mute: #a3a3a3;
+  --card-line: rgb(255 255 255 / 0.1);
+  --accent: #e5e5e5;
+}
+
+.bg-card { background-color: var(--card-bg, #1c1915); }
+.text-card-fg { color: var(--card-fg, #f6f1e8); }
+.text-card-mute { color: var(--card-mute, #d2c8bc); }
+.border-card-line { border-color: var(--card-line, rgb(255 255 255 / 0.14)); }
+
 .tpl {
   --tpl-accent: #c6a36e;
   --tpl-bg: #1c1915;
