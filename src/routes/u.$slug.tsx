@@ -1,11 +1,22 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, Copy, Download, Flag, Share2, Smartphone } from "lucide-react";
+import {
+  Check,
+  Copy,
+  Download,
+  Flag,
+  Mail,
+  MessageCircle,
+  Share2,
+  Smartphone,
+  X,
+} from "lucide-react";
 import { CallingCard } from "@/components/calling-card";
 import { QrMark } from "@/components/qr-mark";
 import { PrivacyNote } from "@/components/privacy-note";
 import { recordShare, recordView } from "@/lib/card-analytics";
 import { downloadVCard, SAVE_PHONE_HELP, shareVCardToPhone } from "@/lib/save-contact";
+import { tryNativeShareLink } from "@/lib/share-image";
 import {
   blockKey,
   isBlocked,
@@ -34,6 +45,7 @@ function PublicCardPage() {
   const [link, setLink] = useState("");
   const [showSavePrivate, setShowSavePrivate] = useState(false);
   const [showReport, setShowReport] = useState(false);
+  const [showShareSheet, setShowShareSheet] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -144,22 +156,20 @@ function PublicCardPage() {
   }
 
   async function shareCard() {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: profile!.fullName || "Calling Card",
-          text: profile!.role || profile!.tagline,
-          url: link,
-        });
-        recordShare(slug);
-        return;
-      } catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError") return;
-      }
+    const shareText =
+      [profile!.fullName, profile!.role || profile!.tagline].filter(Boolean).join(" — ") ||
+      "Calling card";
+    const r = await tryNativeShareLink({
+      title: profile!.fullName || "Calling Card",
+      text: shareText,
+      url: link,
+    });
+    if (r === "shared") {
+      recordShare(slug);
+      return;
     }
-    await navigator.clipboard.writeText(link);
-    recordShare(slug);
-    setNotice("Link copied");
+    if (r === "aborted") return;
+    setShowShareSheet(true);
   }
 
   function saveContactFile() {
@@ -174,6 +184,9 @@ function PublicCardPage() {
   }
 
   const qrValue = qrMode === "contact" ? toMeCard(profile) : link;
+  const shareText =
+    [profile.fullName, profile.role || profile.tagline].filter(Boolean).join(" — ") ||
+    "Calling card";
 
   return (
     <main data-theme={profile.theme} className="min-h-screen text-ink">
@@ -351,7 +364,138 @@ function PublicCardPage() {
           }}
         />
       ) : null}
+
+      {showShareSheet ? (
+        <PublicShareSheet
+          url={link}
+          shareText={shareText}
+          title={profile.fullName || "Calling Card"}
+          onClose={() => setShowShareSheet(false)}
+          onCopied={() => {
+            recordShare(slug);
+            setNotice("Link copied");
+            setShowShareSheet(false);
+          }}
+          onShared={() => recordShare(slug)}
+        />
+      ) : null}
     </main>
+  );
+}
+
+function PublicShareSheet({
+  url,
+  shareText,
+  title,
+  onClose,
+  onCopied,
+  onShared,
+}: {
+  url: string;
+  shareText: string;
+  title: string;
+  onClose: () => void;
+  onCopied: () => void;
+  onShared: () => void;
+}) {
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const encodedUrl = encodeURIComponent(url);
+  const encodedText = encodeURIComponent(`${shareText}\n${url}`);
+  const encodedTitle = encodeURIComponent(title);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Share link"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="w-full max-w-md rounded-2xl border border-line bg-cream p-5 shadow-xl">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-ink">Share link</h2>
+            <p className="mt-1 text-sm text-mute">Pick where to send this calling card.</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-1.5 text-mute hover:bg-paper hover:text-ink"
+            aria-label="Close"
+          >
+            <X className="size-5" />
+          </button>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <a
+            href={`https://wa.me/?text=${encodedText}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={onShared}
+            className="flex flex-col items-center gap-1.5 rounded-xl border border-ink bg-ink px-3 py-3 text-sm font-medium text-cream hover:opacity-90"
+          >
+            <MessageCircle className="size-5" />
+            WhatsApp
+          </a>
+          <a
+            href={`https://t.me/share/url?url=${encodedUrl}&text=${encodeURIComponent(shareText)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={onShared}
+            className="flex flex-col items-center gap-1.5 rounded-xl border border-line bg-paper px-3 py-3 text-sm font-medium text-ink hover:bg-cream"
+          >
+            <Share2 className="size-5" />
+            Telegram
+          </a>
+          <a
+            href={`https://twitter.com/intent/tweet?text=${encodedText}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={onShared}
+            className="flex flex-col items-center gap-1.5 rounded-xl border border-line bg-paper px-3 py-3 text-sm font-medium text-ink hover:bg-cream"
+          >
+            <Share2 className="size-5" />
+            X / Twitter
+          </a>
+          <a
+            href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={onShared}
+            className="flex flex-col items-center gap-1.5 rounded-xl border border-line bg-paper px-3 py-3 text-sm font-medium text-ink hover:bg-cream"
+          >
+            <Share2 className="size-5" />
+            Facebook
+          </a>
+          <a
+            href={`mailto:?subject=${encodedTitle}&body=${encodedText}`}
+            onClick={onShared}
+            className="flex flex-col items-center gap-1.5 rounded-xl border border-line bg-paper px-3 py-3 text-sm font-medium text-ink hover:bg-cream"
+          >
+            <Mail className="size-5" />
+            Email
+          </a>
+          <button
+            type="button"
+            onClick={onCopied}
+            className="flex flex-col items-center gap-1.5 rounded-xl border border-line bg-paper px-3 py-3 text-sm font-medium text-ink hover:bg-cream"
+          >
+            <Copy className="size-5" />
+            Copy link
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
