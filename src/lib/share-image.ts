@@ -1,6 +1,6 @@
-import { publicCardUrl, type Profile } from "./profile";
+import { publicCardUrl, formatPhoneDisplay, getFullPhone, type Profile } from "./profile";
 
-/** Draw a shareable card image (no extra dependencies). */
+/** Draw a clear, shareable card image that looks like the real card. */
 export async function renderCardImage(profile: Profile): Promise<Blob> {
   const w = 1080;
   const h = 1350;
@@ -10,48 +10,106 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas not available");
 
+  // Theme colors
+  const themes: Record<string, { bg: string; fg: string; mute: string; accent: string }> = {
+    brass: { bg: "#1c1915", fg: "#f6f1e8", mute: "#d2c8bc", accent: "#c6a36e" },
+    signal: { bg: "#12181f", fg: "#e8f0f5", mute: "#b7c6ce", accent: "#7dbeb8" },
+    tide: { bg: "#0f1c1a", fg: "#e6f4f2", mute: "#a8d5d0", accent: "#5aa8a0" },
+    ink: { bg: "#111111", fg: "#f5f5f5", mute: "#a3a3a3", accent: "#e5e5e5" },
+  };
+  const t = themes[profile.theme] || themes.brass;
+
   // Background
-  ctx.fillStyle = "#1a1714";
+  ctx.fillStyle = t.bg;
   ctx.fillRect(0, 0, w, h);
 
-  // Accent bar
-  ctx.fillStyle = "#c6a36e";
-  ctx.fillRect(0, 0, w, 16);
+  // Accent top bar
+  ctx.fillStyle = t.accent;
+  ctx.fillRect(0, 0, w, 12);
 
-  ctx.fillStyle = "#f6f1e8";
-  ctx.font = "600 28px system-ui, sans-serif";
-  ctx.fillText((profile.organization || "Calling Card").slice(0, 40), 64, 100);
+  // Initials circle
+  ctx.fillStyle = t.accent;
+  ctx.beginPath();
+  ctx.arc(140, 160, 56, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = t.bg;
+  ctx.font = "600 36px system-ui, sans-serif";
+  ctx.textAlign = "center";
+  const initials = (profile.fullName || "?")
+    .trim()
+    .split(/\s+/)
+    .map((p) => p[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+  ctx.fillText(initials, 140, 172);
+  ctx.textAlign = "left";
 
-  ctx.font = "600 72px Georgia, serif";
-  const name = (profile.fullName || "Your name").slice(0, 32);
-  wrapText(ctx, name, 64, 220, w - 128, 84);
+  // Org / type
+  ctx.fillStyle = t.mute;
+  ctx.font = "500 22px system-ui, sans-serif";
+  ctx.fillText((profile.organization || profile.cardType || "Calling Card").slice(0, 36), 220, 150);
 
-  ctx.fillStyle = "#c6a36e";
-  ctx.font = "500 32px system-ui, sans-serif";
-  if (profile.role) ctx.fillText(profile.role.slice(0, 48), 64, 420);
+  // Name
+  ctx.fillStyle = t.fg;
+  ctx.font = "600 64px Georgia, serif";
+  wrapText(ctx, (profile.fullName || "Your name").slice(0, 40), 80, 320, w - 160, 76);
 
-  ctx.fillStyle = "#c4bbb0";
-  ctx.font = "400 28px system-ui, sans-serif";
-  if (profile.tagline) wrapText(ctx, profile.tagline.slice(0, 120), 64, 480, w - 128, 40);
-
-  let y = 620;
-  ctx.fillStyle = "#f6f1e8";
-  ctx.font = "400 26px system-ui, sans-serif";
-  const lines = [
-    profile.email && `✉  ${profile.email}`,
-    profile.phone && `☎  ${profile.phone}`,
-    profile.website && `🌐  ${profile.website}`,
-    profile.location && `⌖  ${profile.location}`,
-  ].filter(Boolean) as string[];
-  for (const line of lines) {
-    ctx.fillText(line.slice(0, 50), 64, y);
-    y += 48;
+  // Role
+  if (profile.role) {
+    ctx.fillStyle = t.accent;
+    ctx.font = "500 30px system-ui, sans-serif";
+    ctx.fillText(profile.role.slice(0, 50), 80, 480);
   }
 
-  ctx.fillStyle = "#5c564e";
-  ctx.font = "400 22px system-ui, sans-serif";
+  // Tagline
+  if (profile.tagline) {
+    ctx.fillStyle = t.mute;
+    ctx.font = "400 26px system-ui, sans-serif";
+    wrapText(ctx, profile.tagline.slice(0, 140), 80, 540, w - 160, 36);
+  }
+
+  // Divider
+  ctx.strokeStyle = t.mute;
+  ctx.globalAlpha = 0.3;
+  ctx.beginPath();
+  ctx.moveTo(80, 640);
+  ctx.lineTo(w - 80, 640);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  // Contact rows
+  let y = 720;
+  ctx.font = "400 28px system-ui, sans-serif";
+  ctx.fillStyle = t.fg;
+
+  const phone = formatPhoneDisplay(profile) || getFullPhone(profile);
+  const rows: [string, string][] = [];
+  if (profile.email) rows.push(["Email", profile.email]);
+  if (phone) rows.push(["Phone", phone]);
+  if (profile.whatsapp) rows.push(["WhatsApp", profile.whatsapp]);
+  if (profile.telegram) rows.push(["Telegram", profile.telegram.replace(/^@/, "")]);
+  if (profile.linkedin) rows.push(["LinkedIn", profile.linkedin]);
+  if (profile.instagram) rows.push(["Instagram", profile.instagram.replace(/^@/, "")]);
+  if (profile.x) rows.push(["X", profile.x.replace(/^@/, "")]);
+  if (profile.website) rows.push(["Web", profile.website]);
+  if (profile.location) rows.push(["Base", profile.location]);
+
+  for (const [label, value] of rows.slice(0, 8)) {
+    ctx.fillStyle = t.mute;
+    ctx.font = "500 18px system-ui, sans-serif";
+    ctx.fillText(label.toUpperCase(), 80, y);
+    ctx.fillStyle = t.fg;
+    ctx.font = "400 28px system-ui, sans-serif";
+    ctx.fillText(value.slice(0, 42), 80, y + 32);
+    y += 72;
+  }
+
+  // Footer
+  ctx.fillStyle = t.mute;
+  ctx.font = "400 20px system-ui, sans-serif";
   const link = typeof window !== "undefined" ? publicCardUrl(profile) : "";
-  ctx.fillText((link || "calling card").slice(0, 60), 64, h - 64);
+  ctx.fillText((link || "calling card").slice(0, 70), 80, h - 48);
 
   return new Promise((resolve, reject) => {
     canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Could not export image"))), "image/png");
@@ -102,19 +160,12 @@ function canNativeShareFiles(file: File): boolean {
     if (typeof nav.canShare === "function") {
       return nav.canShare({ files: [file] });
     }
-    // Some browsers expose share but not canShare; try optimistically on mobile
     return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   } catch {
     return false;
   }
 }
 
-/**
- * Prefer the OS share sheet (WhatsApp, etc.). Returns:
- * - "shared" when the native sheet was used successfully
- * - "aborted" when the user cancelled
- * - "unsupported" when native file share is not available (caller should show custom sheet)
- */
 export async function shareCardImage(profile: Profile): Promise<"shared" | "downloaded" | "aborted" | "unsupported"> {
   const blob = await renderCardImage(profile);
   const file = new File([blob], "calling-card.png", { type: "image/png" });
@@ -128,18 +179,15 @@ export async function shareCardImage(profile: Profile): Promise<"shared" | "down
         files: [file],
         title: profile.fullName || "Calling Card",
         text: profile.role || profile.tagline || "My calling card",
-        url: publicCardUrl(profile),
       });
       return "shared";
     } catch (e) {
       if (e instanceof DOMException && e.name === "AbortError") return "aborted";
-      // fall through to unsupported so UI can show the custom sheet
     }
   }
   return "unsupported";
 }
 
-/** Try native share for a link; returns true if the OS sheet opened. */
 export async function tryNativeShareLink(opts: {
   title: string;
   text?: string;
