@@ -1,12 +1,10 @@
 import type { ReactNode } from "react";
-import { Github, Globe, Mail, MapPin, Phone } from "lucide-react";
+import { Globe, Mail, MapPin, Phone } from "lucide-react";
 import {
   CARD_TYPES,
   displayHost,
   formatPhoneDisplay,
   getFullPhone,
-  githubHref,
-  githubLabel,
   hrefForWebsite,
   initials,
   whatsappHref,
@@ -30,7 +28,7 @@ function Row({
 }) {
   const body = (
     <>
-      <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center text-accent" aria-hidden="true">
+      <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center text-lg leading-none" aria-hidden="true">
         {icon}
       </span>
       <span className="min-w-0">
@@ -57,13 +55,8 @@ function Row({
   );
 }
 
-function SocialIcon({ emoji }: { emoji: string }) {
-  return <span className="text-base leading-none">{emoji}</span>;
-}
-
 export function CallingCard({ profile }: { profile: Profile }) {
   const site = hrefForWebsite(profile.website);
-  const github = githubHref(profile.github);
   const wa = whatsappHref(profile.whatsapp);
   const tg = telegramHref(profile.telegram);
   const li = linkedinHref(profile.linkedin);
@@ -105,28 +98,25 @@ export function CallingCard({ profile }: { profile: Profile }) {
           <Row href={`tel:${fullPhone}`} icon={<Phone className="size-5" />} label="Phone" value={phoneDisplay || fullPhone} />
         ) : null}
         {wa ? (
-          <Row href={wa} icon={<SocialIcon emoji="💬" />} label="WhatsApp" value={profile.whatsapp} />
+          <Row href={wa} icon={<span className="text-xl">💬</span>} label="WhatsApp" value={profile.whatsapp} />
         ) : null}
         {tg ? (
-          <Row href={tg} icon={<SocialIcon emoji="✈️" />} label="Telegram" value={profile.telegram.replace(/^@/, "")} />
+          <Row href={tg} icon={<span className="text-xl">✈️</span>} label="Telegram" value={profile.telegram.replace(/^@/, "")} />
         ) : null}
         {li ? (
-          <Row href={li} icon={<SocialIcon emoji="💼" />} label="LinkedIn" value={profile.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\//i, "")} />
+          <Row href={li} icon={<span className="text-xl">💼</span>} label="LinkedIn" value={profile.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\//i, "")} />
         ) : null}
         {ig ? (
-          <Row href={ig} icon={<SocialIcon emoji="📷" />} label="Instagram" value={profile.instagram.replace(/^@/, "")} />
+          <Row href={ig} icon={<span className="text-xl">📷</span>} label="Instagram" value={profile.instagram.replace(/^@/, "")} />
         ) : null}
         {xLink ? (
-          <Row href={xLink} icon={<SocialIcon emoji="𝕏" />} label="X" value={profile.x.replace(/^@/, "")} />
+          <Row href={xLink} icon={<span className="text-xl font-bold">𝕏</span>} label="X" value={profile.x.replace(/^@/, "")} />
         ) : null}
         {site ? (
           <Row href={site} icon={<Globe className="size-5" />} label="Web" value={displayHost(profile.website)} />
         ) : null}
         {profile.location ? (
           <Row icon={<MapPin className="size-5" />} label="Base" value={profile.location} />
-        ) : null}
-        {github ? (
-          <Row href={github} icon={<Github className="size-5" />} label="GitHub" value={githubLabel(profile.github)} />
         ) : null}
       </ul>
 
