@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { CallingCard } from "@/components/calling-card";
 import { QrMark } from "@/components/qr-mark";
-import { DEMO_PROFILE, publicCardUrl } from "@/lib/profile";
+import { DEMO_PROFILE } from "@/lib/profile";
 
 export const Route = createFileRoute("/")({ component: Landing });
 
@@ -80,10 +80,15 @@ function Landing() {
 
           {/* Live product preview — this is what makes it feel like an app */}
           <div className="relative">
-            <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-amber-100/80 via-transparent to-zinc-200/50 dark:from-amber-900/20 dark:to-zinc-800/40" aria-hidden="true" />
+            <div
+              className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-amber-100/80 via-transparent to-zinc-200/50 dark:from-amber-900/20 dark:to-zinc-800/40"
+              aria-hidden="true"
+            />
             <div className="relative rounded-[1.75rem] border border-zinc-200/80 bg-white/80 p-4 shadow-2xl shadow-zinc-900/10 backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/80 dark:shadow-black/40 sm:p-5">
               <div className="mb-3 flex items-center justify-between gap-2">
-                <p className="text-xs font-semibold tracking-wide text-zinc-500 uppercase">Live preview</p>
+                <p className="text-xs font-semibold tracking-wide text-zinc-500 uppercase">
+                  Live preview
+                </p>
                 <Link
                   to="/u/$slug"
                   params={{ slug: "demo" }}
@@ -130,44 +135,47 @@ function Landing() {
       <section className="mx-auto w-full max-w-5xl px-4 pb-12 sm:px-6">
         <h2 className="text-sm font-semibold tracking-wide text-zinc-500 uppercase">Open in the app</h2>
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <AppTile
+          <Link
             to="/create"
-            icon={<Sparkles className="size-5" />}
-            title="Create card"
-            body="Build and share your calling card"
-            primary
-          />
-          <AppTile
-            to="/scan"
-            icon={<ScanLine className="size-5" />}
-            title="Scan"
-            body="Point at a QR and open or save"
-          />
-          <AppTile
-            to="/cards"
-            icon={<Contact className="size-5" />}
-            title="My cards"
-            body="Work, personal, or event identities"
-          />
-          <AppTile
-            to="/event-mode"
-            icon={<Calendar className="size-5" />}
-            title="Event mode"
-            body="Temporary presence for one conference"
-          />
-          <AppTile
-            to="/contacts"
-            icon={<Shield className="size-5" />}
-            title="Private contacts"
-            body="Tags and notes only on your device"
-          />
-          <AppTile
+            className="group flex items-start gap-3 rounded-2xl border border-zinc-900 bg-zinc-900 p-4 text-white shadow-lg shadow-zinc-900/10 transition-all dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
+          >
+            <span className="mt-0.5 grid size-10 shrink-0 place-items-center rounded-xl bg-white/15 text-white dark:bg-zinc-900/10 dark:text-zinc-900">
+              <Sparkles className="size-5" />
+            </span>
+            <span className="min-w-0">
+              <span className="flex items-center gap-1 text-sm font-semibold">
+                Create card
+                <ArrowRight className="size-3.5 text-white/80 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100 dark:text-zinc-700" />
+              </span>
+              <span className="mt-0.5 block text-sm leading-snug text-white/75 dark:text-zinc-600">
+                Build and share your calling card
+              </span>
+            </span>
+          </Link>
+
+          <AppTile to="/scan" icon={<ScanLine className="size-5" />} title="Scan" body="Point at a QR and open or save" />
+          <AppTile to="/cards" icon={<Contact className="size-5" />} title="My cards" body="Work, personal, or event identities" />
+          <AppTile to="/event-mode" icon={<Calendar className="size-5" />} title="Event mode" body="Temporary presence for one conference" />
+          <AppTile to="/contacts" icon={<Shield className="size-5" />} title="Private contacts" body="Tags and notes only on your device" />
+
+          <Link
             to="/u/$slug"
             params={{ slug: "demo" }}
-            icon={<QrCode className="size-5" />}
-            title="Try demo"
-            body="Full public card with real actions"
-          />
+            className="group flex items-start gap-3 rounded-2xl border border-zinc-200 bg-white p-4 transition-all hover:border-zinc-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-600"
+          >
+            <span className="mt-0.5 grid size-10 shrink-0 place-items-center rounded-xl bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-100">
+              <QrCode className="size-5" />
+            </span>
+            <span className="min-w-0">
+              <span className="flex items-center gap-1 text-sm font-semibold">
+                Try demo
+                <ArrowRight className="size-3.5 text-zinc-400 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
+              </span>
+              <span className="mt-0.5 block text-sm leading-snug text-zinc-500 dark:text-zinc-400">
+                Full public card with real actions
+              </span>
+            </span>
+          </Link>
         </div>
       </section>
 
@@ -217,62 +225,30 @@ function Step({ n, title, body }: { n: string; title: string; body: string }) {
 
 function AppTile({
   to,
-  params,
   icon,
   title,
   body,
-  primary,
 }: {
-  to: string;
-  params?: Record<string, string>;
+  to: "/scan" | "/cards" | "/event-mode" | "/contacts";
   icon: React.ReactNode;
   title: string;
   body: string;
-  primary?: boolean;
 }) {
   return (
     <Link
       to={to}
-      params={params}
-      className={
-        "group flex items-start gap-3 rounded-2xl border p-4 transition-all " +
-        (primary
-          ? "border-zinc-900 bg-zinc-900 text-white shadow-lg shadow-zinc-900/10 dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
-          : "border-zinc-200 bg-white hover:border-zinc-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-600")
-      }
+      className="group flex items-start gap-3 rounded-2xl border border-zinc-200 bg-white p-4 transition-all hover:border-zinc-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-600"
     >
-      <span
-        className={
-          "mt-0.5 grid size-10 shrink-0 place-items-center rounded-xl " +
-          (primary
-            ? "bg-white/15 text-white dark:bg-zinc-900/10 dark:text-zinc-900"
-            : "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-100")
-        }
-      >
+      <span className="mt-0.5 grid size-10 shrink-0 place-items-center rounded-xl bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-100">
         {icon}
       </span>
       <span className="min-w-0">
         <span className="flex items-center gap-1 text-sm font-semibold">
           {title}
-          <ArrowRight
-            className={
-              "size-3.5 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100 " +
-              (primary ? "text-white/80 dark:text-zinc-700" : "text-zinc-400")
-            }
-          />
+          <ArrowRight className="size-3.5 text-zinc-400 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
         </span>
-        <span
-          className={
-            "mt-0.5 block text-sm leading-snug " +
-            (primary ? "text-white/75 dark:text-zinc-600" : "text-zinc-500 dark:text-zinc-400")
-          }
-        >
-          {body}
-        </span>
+        <span className="mt-0.5 block text-sm leading-snug text-zinc-500 dark:text-zinc-400">{body}</span>
       </span>
     </Link>
   );
 }
-
-// silence unused import if tree-shaken oddly
-void publicCardUrl;
