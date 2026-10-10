@@ -1,12 +1,14 @@
 /**
  * Anonymous card insights — stored locally for the card owner.
  * Public viewers only increment a counter; no identity is stored.
+ * Respects Settings → insightsEnabled.
  */
+
+import { readSettings } from "./app-settings";
 
 export type DayBucket = { day: string; views: number; shares: number; saves: number };
 
 export type CardInsights = {
-  /** ISO date keys YYYY-MM-DD */
   days: Record<string, { views: number; shares: number; saves: number }>;
   totalViews: number;
   totalShares: number;
@@ -42,6 +44,11 @@ export function getInsights(cardKey: string): CardInsights {
 
 function bump(cardKey: string, field: "views" | "shares" | "saves") {
   if (typeof window === "undefined" || !cardKey) return;
+  try {
+    if (!readSettings().insightsEnabled) return;
+  } catch {
+    // ignore
+  }
   const all = readAll();
   const row = all[cardKey] || empty();
   const day = todayKey();
@@ -56,7 +63,6 @@ function bump(cardKey: string, field: "views" | "shares" | "saves") {
 }
 
 export function recordView(cardKey: string) {
-  // Dedupe same tab session: one view per slug per hour
   if (typeof window === "undefined") return;
   const flag = `cc.viewed.${cardKey}`;
   const last = sessionStorage.getItem(flag);
@@ -100,20 +106,9 @@ export function insightsSummary(cardKey: string) {
       shares: ins.totalShares,
       saves: ins.totalSaves,
     },
-    /** Last 14 day rows for charts */
     recentDays: Object.entries(ins.days)
       .sort(([a], [b]) => (a < b ? 1 : -1))
       .slice(0, 14)
       .map(([day, b]) => ({ day, ...b })),
   };
-}
-
-/** Pro gate (local flag until billing exists). Month detail is Pro. */
-export function isProLocal(): boolean {
-  if (typeof window === "undefined") return false;
-  return localStorage.getItem("cc.pro.v1") === "1";
-}
-
-export function setProLocal(on: boolean) {
-  localStorage.setItem("cc.pro.v1", on ? "1" : "0");
 }
