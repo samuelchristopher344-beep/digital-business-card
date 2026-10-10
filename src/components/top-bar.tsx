@@ -1,11 +1,14 @@
 import { Link } from "@tanstack/react-router";
 import { Moon, Settings, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
-import { applyTheme, patchSettings, readSettings, type ThemePref } from "@/lib/app-settings";
+import {
+  applyTheme,
+  patchSettings,
+  readSettings,
+  resolveIsDark,
+  type ThemePref,
+} from "@/lib/app-settings";
 
-/**
- * Top-edge chrome: title left, optional dark toggle + Settings gear on the right.
- */
 export function TopBar({ title = "Calling Card" }: { title?: string }) {
   const [theme, setTheme] = useState<ThemePref>("system");
   const [dark, setDark] = useState(false);
@@ -14,17 +17,26 @@ export function TopBar({ title = "Calling Card" }: { title?: string }) {
     const s = readSettings();
     setTheme(s.theme);
     applyTheme(s.theme);
-    const isDark =
-      s.theme === "dark" ||
-      (s.theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-    setDark(isDark);
+    setDark(resolveIsDark(s.theme));
+
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const onSystem = () => {
+      const current = readSettings().theme;
+      if (current === "system") {
+        applyTheme("system");
+        setDark(resolveIsDark("system"));
+      }
+    };
+    mq.addEventListener("change", onSystem);
+    return () => mq.removeEventListener("change", onSystem);
   }, []);
 
   function toggleDark() {
     const next: ThemePref = dark ? "light" : "dark";
     patchSettings({ theme: next });
+    applyTheme(next);
     setTheme(next);
-    setDark(!dark);
+    setDark(resolveIsDark(next));
   }
 
   return (
@@ -38,7 +50,6 @@ export function TopBar({ title = "Calling Card" }: { title?: string }) {
         </Link>
 
         <div className="flex shrink-0 items-center gap-1">
-          {/* Edge toggle: appearance only */}
           <button
             type="button"
             onClick={toggleDark}

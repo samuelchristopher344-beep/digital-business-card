@@ -7,8 +7,12 @@ import appCss from "../styles.css?url";
 
 const APP_NAME = "Calling Card";
 
-if (typeof window !== "undefined") {
-  initThemeFromStorage();
+function ThemeBoot() {
+  // Run as early as possible on the client
+  if (typeof window !== "undefined") {
+    initThemeFromStorage();
+  }
+  return null;
 }
 
 export const Route = createRootRoute({
@@ -41,8 +45,14 @@ export const Route = createRootRoute({
     <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var k='cc.app-settings.v1';var raw=localStorage.getItem(k);var theme='system';if(raw){var p=JSON.parse(raw);if(p&&p.theme)theme=p.theme;}var dark=theme==='dark'||(theme==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);var r=document.documentElement;r.dataset.mode=dark?'dark':'light';r.dataset.theme=theme;r.classList.toggle('dark',dark);r.style.colorScheme=dark?'dark':'light';}catch(e){}})();`,
+          }}
+        />
       </head>
-      <body className="min-h-screen bg-zinc-50 text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-50">
+      <body className="min-h-screen antialiased">
+        <ThemeBoot />
         <PreviewHostBridge />
         <AuthProvider>
           <TopBar />

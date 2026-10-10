@@ -8,26 +8,20 @@ export type DefaultTag = "client" | "peer" | "hire" | "friend" | "partner" | "ve
 
 export type AppSettings = {
   theme: ThemePref;
-  /** Public card field visibility */
   showEmailOnCard: boolean;
   showPhoneOnCard: boolean;
   showAddressOnCard: boolean;
   cardUnlistedUntilPublish: boolean;
   allowSearchIndexing: boolean;
   addressCountry: CountryCode;
-  /** Notifications */
   loginAlerts: boolean;
   eventExpiryReminder: boolean;
   weeklyInsightsEmail: boolean;
   cardBirthdayNote: boolean;
-  /** Insights */
   insightsEnabled: boolean;
-  /** Sharing */
   defaultQrMode: "card" | "contact";
   autoMessageAfterScan: boolean;
-  /** Contacts */
   defaultContactTag: DefaultTag;
-  /** Event defaults */
   defaultEventDays: number;
   freeToChatMinutes: number;
 };
@@ -89,14 +83,28 @@ export function patchSettings(partial: Partial<AppSettings>): AppSettings {
   return next;
 }
 
+/** Whether the UI should render in dark appearance right now. */
+export function resolveIsDark(theme: ThemePref): boolean {
+  if (theme === "dark") return true;
+  if (theme === "light") return false;
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+}
+
+/**
+ * Apply theme to <html>:
+ * - data-mode="dark"|"light" → CSS variables in styles.css
+ * - class "dark" → Tailwind dark: utilities
+ */
 export function applyTheme(theme: ThemePref) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
-  const preferDark =
-    theme === "dark" ||
-    (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-  root.classList.toggle("dark", preferDark);
+  const preferDark = resolveIsDark(theme);
+
+  root.dataset.mode = preferDark ? "dark" : "light";
   root.dataset.theme = theme;
+  root.classList.toggle("dark", preferDark);
+  root.style.colorScheme = preferDark ? "dark" : "light";
 }
 
 export function initThemeFromStorage() {
