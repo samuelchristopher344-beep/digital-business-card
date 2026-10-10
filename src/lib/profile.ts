@@ -9,19 +9,32 @@ export const THEMES = [
 
 export type ThemeId = (typeof THEMES)[number]["id"];
 
+export const CARD_TYPES = [
+  { id: "personal", label: "Personal", blurb: "For individual contacts and networking" },
+  { id: "business", label: "Business", blurb: "Professional or freelancer card" },
+  { id: "company", label: "Company", blurb: "Company or brand card" },
+  { id: "org", label: "Organization", blurb: "Team, department, or org card" },
+  { id: "event", label: "Event", blurb: "Temporary card for an event" },
+  { id: "creator", label: "Creator", blurb: "Portfolio or creator card" },
+] as const;
+
+export type CardTypeId = (typeof CARD_TYPES)[number]["id"];
+
 export type Profile = {
   fullName: string;
   role: string;
   organization: string;
   tagline: string;
   email: string;
-  phone: string;
+  phone: string; // stored as E.164 when possible, e.g. +2348012345678
+  phoneCountry: string; // dial code, e.g. "+234"
   website: string;
   location: string;
   github: string;
   note: string;
   focus: string[];
   theme: ThemeId;
+  cardType: CardTypeId;
   /** Public handle used in /u/:slug links */
   username: string;
 };
@@ -34,12 +47,14 @@ export const EMPTY_PROFILE: Profile = {
   tagline: "",
   email: "",
   phone: "",
+  phoneCountry: "+1",
   website: "",
   location: "",
   github: "",
   note: "",
   focus: [],
   theme: "brass",
+  cardType: "personal",
   username: "",
 };
 
@@ -51,12 +66,14 @@ export const DEMO_PROFILE: Profile = {
   tagline: "Engineering ideas. Building the future.",
   email: "samuelchristopher344@gmail.com",
   phone: "",
+  phoneCountry: "+1",
   website: "https://samuelchristopher344-beep.github.io",
   location: "Remote",
   github: "samuelchristopher344-beep",
   note: "Drones, propulsion, marine craft, and future mobility — ideas into prototypes.",
   focus: ["Drones", "Propulsion", "Marine", "Electronics"],
   theme: "brass",
+  cardType: "business",
   username: "demo",
 };
 
@@ -67,6 +84,7 @@ const STORAGE_KEY = "calling-card.profile.v1";
 const SLUG_KEY = "calling-card.slug.v1";
 
 const themeSchema = z.enum(["brass", "signal", "tide", "ink"]);
+const cardTypeSchema = z.enum(["personal", "business", "company", "org", "event", "creator"]);
 
 const packedSchema = z.object({
   n: z.string().max(80).optional(),
@@ -75,12 +93,14 @@ const packedSchema = z.object({
   t: z.string().max(160).optional(),
   e: z.string().max(120).optional(),
   p: z.string().max(40).optional(),
+  pc: z.string().max(8).optional(), // phone country
   w: z.string().max(200).optional(),
   l: z.string().max(80).optional(),
   g: z.string().max(120).optional(),
   m: z.string().max(280).optional(),
   f: z.array(z.string().max(24)).max(6).optional(),
   h: themeSchema.optional(),
+  ct: cardTypeSchema.optional(),
   u: z.string().max(40).optional(),
 });
 
@@ -92,12 +112,14 @@ function unpack(data: z.infer<typeof packedSchema>): Profile {
     tagline: data.t?.trim() ?? "",
     email: data.e?.trim() ?? "",
     phone: data.p?.trim() ?? "",
+    phoneCountry: data.pc?.trim() || "+1",
     website: data.w?.trim() ?? "",
     location: data.l?.trim() ?? "",
     github: data.g?.trim() ?? "",
     note: data.m?.trim() ?? "",
     focus: (data.f ?? []).map((item) => item.trim()).filter(Boolean).slice(0, 6),
     theme: data.h ?? "brass",
+    cardType: data.ct ?? "personal",
     username: data.u?.trim().toLowerCase() ?? "",
   };
 }
@@ -110,12 +132,14 @@ function pack(profile: Profile): z.infer<typeof packedSchema> {
   if (profile.tagline) packed.t = profile.tagline;
   if (profile.email) packed.e = profile.email;
   if (profile.phone) packed.p = profile.phone;
+  if (profile.phoneCountry && profile.phoneCountry !== "+1") packed.pc = profile.phoneCountry;
   if (profile.website) packed.w = profile.website;
   if (profile.location) packed.l = profile.location;
   if (profile.github) packed.g = profile.github;
   if (profile.note) packed.m = profile.note;
   if (profile.focus.length) packed.f = profile.focus;
   if (profile.theme !== "brass") packed.h = profile.theme;
+  if (profile.cardType !== "personal") packed.ct = profile.cardType;
   if (profile.username) packed.u = profile.username;
   return packed;
 }
@@ -237,7 +261,8 @@ export function toVCard(profile: Profile): string {
   if (profile.organization) lines.push(`ORG:${vEsc(profile.organization)}`);
   if (profile.role) lines.push(`TITLE:${vEsc(profile.role)}`);
   if (profile.email) lines.push(`EMAIL;TYPE=INTERNET:${vEsc(profile.email)}`);
-  if (profile.phone) lines.push(`TEL;TYPE=CELL:${vEsc(profile.phone)}`);
+  const fullPhone = getFullPhone(profile);
+  if (fullPhone) lines.push(`TEL;TYPE=CELL:${vEsc(fullPhone)}`);
   const site = hrefForWebsite(profile.website);
   if (site) lines.push(`URL:${vEsc(site)}`);
   const gh = githubHref(profile.github);
@@ -258,7 +283,8 @@ function mecardEsc(value: string): string {
 export function toMeCard(profile: Profile): string {
   const { first, last } = splitName(profile.fullName);
   const parts = [`MECARD:N:${mecardEsc(last)},${mecardEsc(first)}`];
-  if (profile.phone) parts.push(`TEL:${mecardEsc(profile.phone)}`);
+  const fullPhone = getFullPhone(profile);
+  if (fullPhone) parts.push(`TEL:${mecardEsc(fullPhone)}`);
   if (profile.email) parts.push(`EMAIL:${mecardEsc(profile.email)}`);
   const site = hrefForWebsite(profile.website);
   if (site) parts.push(`URL:${mecardEsc(site)}`);
@@ -309,4 +335,21 @@ export function githubLabel(github: string): string {
     }
   }
   return value;
+}
+
+/** Combine country code + local number into E.164-style phone, or return existing if already full. */
+export function getFullPhone(profile: Profile): string {
+  const raw = profile.phone.trim();
+  if (raw.startsWith("+")) return raw.replace(/[^\d+]/g, "");
+  const local = raw.replace(/[^\d]/g, "");
+  if (!local) return "";
+  const country = (profile.phoneCountry || "+1").replace(/[^\d+]/g, "");
+  return `${country}${local}`;
+}
+
+export function formatPhoneDisplay(profile: Profile): string {
+  const full = getFullPhone(profile);
+  if (!full) return "";
+  // Simple spacing for display
+  return full.replace(/(\+\d{1,3})(\d{3})(\d{3})(\d+)/, "$1 $2 $3 $4").trim();
 }
