@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Check, Copy, Download, RotateCcw, Share2, X } from "lucide-react";
+import { RotateCcw, X } from "lucide-react";
 import { AccountBar } from "@/components/account-bar";
 import { CallingCard } from "@/components/calling-card";
 import { QrMark } from "@/components/qr-mark";
+import { ShareActions } from "@/components/share-actions";
 import { useSession } from "@/lib/auth/client";
+import { ensureCardStore, saveActiveProfile } from "@/lib/multi-card";
 import {
   EMPTY_PROFILE,
   THEMES,
-  downloadFileName,
   publicCardUrl,
   slugify,
   toMeCard,
-  toVCard,
   writeHash,
   writeStoredProfile,
   type Profile,
@@ -37,13 +37,14 @@ export function CardWorkspace({
   const [profile, setProfile] = useState<Profile>(initial);
   const [booted, setBooted] = useState(false);
   const [qrMode, setQrMode] = useState<"card" | "contact">("card");
-  const [notice, setNotice] = useState("");
   const [focusDraft, setFocusDraft] = useState("");
   const [link, setLink] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [notice, setNotice] = useState("");
 
   useEffect(() => {
+    ensureCardStore();
     setProfile(initial);
     writeStoredProfile(initial);
     if (typeof window !== "undefined") {
@@ -64,6 +65,7 @@ export function CardWorkspace({
       return;
     }
     writeStoredProfile(profile);
+    saveActiveProfile(profile);
     writeHash(profile);
     setLink(publicCardUrl(profile));
   }, [profile, booted]);
@@ -89,40 +91,6 @@ export function CardWorkspace({
     setFocusDraft("");
   }
 
-  async function copyLink() {
-    await navigator.clipboard.writeText(publicCardUrl(profile));
-    setNotice("Link copied");
-  }
-
-  async function shareCard() {
-    const url = publicCardUrl(profile);
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: profile.fullName || "Calling Card",
-          text: profile.role || profile.tagline,
-          url,
-        });
-        return;
-      } catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError") return;
-      }
-    }
-    await navigator.clipboard.writeText(url);
-    setNotice("Link copied");
-  }
-
-  function saveContact() {
-    const blob = new Blob([toVCard(profile)], { type: "text/vcard;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = downloadFileName(profile);
-    anchor.click();
-    URL.revokeObjectURL(url);
-    setNotice("Contact file saved");
-  }
-
   async function saveToAccount() {
     if (!signedIn) return;
     setSaving(true);
@@ -142,6 +110,7 @@ export function CardWorkspace({
       if (data.card) {
         setProfile(data.card);
         writeStoredProfile(data.card);
+        saveActiveProfile(data.card);
       }
       setNotice("Saved to your account");
     } catch {
@@ -167,9 +136,14 @@ export function CardWorkspace({
             <header className="mb-5">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-xs font-medium tracking-widest text-mute uppercase">Calling card</p>
-                <Link to="/" className="text-xs text-mute underline-offset-2 hover:underline">
-                  Home
-                </Link>
+                <div className="flex gap-3 text-xs text-mute">
+                  <Link to="/cards" className="underline-offset-2 hover:underline">
+                    Cards
+                  </Link>
+                  <Link to="/" className="underline-offset-2 hover:underline">
+                    Home
+                  </Link>
+                </div>
               </div>
               <h1 className="mt-2 font-display text-2xl leading-tight">{heading}</h1>
               <p className="mt-2 text-sm leading-relaxed text-mute">{subheading}</p>
@@ -195,7 +169,7 @@ export function CardWorkspace({
                   <div>
                     <p className="text-sm font-medium text-ink">Save to your account</p>
                     <p className="mt-0.5 text-xs text-mute">
-                      Claims your username and works on any device after you sign in.
+                      Optional sync so this card works on another device after sign-in.
                     </p>
                   </div>
                   <button
@@ -207,32 +181,24 @@ export function CardWorkspace({
                     {saving ? "Saving…" : "Save to account"}
                   </button>
                 </div>
-                {saveError ? (
-                  <p className="mt-2 text-sm text-red-700">{saveError}</p>
-                ) : null}
+                {saveError ? <p className="mt-2 text-sm text-red-700">{saveError}</p> : null}
+                {notice ? <p className="mt-2 text-sm text-mute">{notice}</p> : null}
               </section>
             ) : (
-              <section className="rounded-card border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
-                <strong className="font-semibold">Tip:</strong>{" "}
-                <Link to="/signup" className="underline underline-offset-2">
-                  Create a free account
-                </Link>{" "}
-                so your card and username are saved on the server — not only in this browser.
+              <section className="rounded-card border border-line bg-cream p-4 text-sm text-mute">
+                Account is optional. This card already works in this browser.{" "}
+                <Link to="/signup" className="font-medium text-ink underline-offset-2 hover:underline">
+                  Sign up only if you want the same card on another device
+                </Link>
+                .
               </section>
             )}
 
             <section className="rounded-card border border-line bg-cream p-5 sm:p-6">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h2 className="font-display text-2xl leading-tight">Hand it over</h2>
-                  <p className="mt-1 text-sm leading-relaxed text-mute">
-                    Scan to open the card, or switch the code so a phone can save the contact.
-                  </p>
-                </div>
-                <span className="sr-only" aria-live="polite">
-                  {notice}
-                </span>
-              </div>
+              <h2 className="font-display text-2xl leading-tight">Hand it over</h2>
+              <p className="mt-1 text-sm leading-relaxed text-mute">
+                Save to phone, share an image for WhatsApp, or scan the QR.
+              </p>
 
               <div className="mt-5 flex flex-col gap-5 sm:flex-row sm:items-start">
                 <div className="sm:w-52 sm:shrink-0">
@@ -242,7 +208,7 @@ export function CardWorkspace({
                     <div className="aspect-square rounded-2xl bg-paper" />
                   )}
                 </div>
-                <div className="flex flex-col gap-3">
+                <div className="flex min-w-0 flex-1 flex-col gap-3">
                   <div className="grid grid-cols-2 rounded-xl bg-paper p-1" role="group" aria-label="QR contents">
                     <ModeButton active={qrMode === "card"} onClick={() => setQrMode("card")}>
                       Open card
@@ -251,23 +217,7 @@ export function CardWorkspace({
                       Save contact
                     </ModeButton>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <ActionButton icon={<Download className="size-4" />} onClick={saveContact}>
-                      Download contact
-                    </ActionButton>
-                    <ActionButton icon={<Copy className="size-4" />} onClick={copyLink}>
-                      Copy link
-                    </ActionButton>
-                    <ActionButton icon={<Share2 className="size-4" />} onClick={shareCard}>
-                      Share
-                    </ActionButton>
-                  </div>
-                  {notice ? (
-                    <p className="inline-flex items-center gap-1.5 text-sm text-mute">
-                      <Check className="size-4 text-accent" aria-hidden="true" />
-                      {notice}
-                    </p>
-                  ) : null}
+                  <ShareActions profile={profile} cardKey={publicSlug || "my-card"} />
                 </div>
               </div>
             </section>
@@ -287,12 +237,7 @@ export function CardWorkspace({
 
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 <Field label="Full name" value={profile.fullName} onChange={(v) => update("fullName", v)} autoComplete="name" />
-                <Field
-                  label="Username"
-                  value={profile.username}
-                  onChange={(v) => update("username", slugify(v))}
-                  autoComplete="username"
-                />
+                <Field label="Username" value={profile.username} onChange={(v) => update("username", slugify(v))} autoComplete="username" />
                 <Field label="Role / title" value={profile.role} onChange={(v) => update("role", v)} />
                 <Field label="Organization" value={profile.organization} onChange={(v) => update("organization", v)} />
                 <Field label="Tagline" value={profile.tagline} onChange={(v) => update("tagline", v)} />
@@ -321,17 +266,11 @@ export function CardWorkspace({
                     <button
                       key={tag}
                       type="button"
-                      onClick={() =>
-                        update(
-                          "focus",
-                          profile.focus.filter((item) => item !== tag),
-                        )
-                      }
+                      onClick={() => update("focus", profile.focus.filter((item) => item !== tag))}
                       className="inline-flex h-9 items-center gap-1 rounded-full border border-line bg-paper px-3 text-sm"
                     >
                       {tag}
                       <X className="size-3.5 text-mute" aria-hidden="true" />
-                      <span className="sr-only">Remove {tag}</span>
                     </button>
                   ))}
                 </div>
@@ -349,11 +288,7 @@ export function CardWorkspace({
                     }}
                     className="h-11 flex-1 rounded-xl border border-line bg-paper px-3 text-sm text-ink outline-none focus-visible:ring-2 focus-visible:ring-accent"
                   />
-                  <button
-                    type="button"
-                    onClick={addFocus}
-                    className="h-11 rounded-xl bg-ink px-4 text-sm font-medium text-cream"
-                  >
+                  <button type="button" onClick={addFocus} className="h-11 rounded-xl bg-ink px-4 text-sm font-medium text-cream">
                     Add
                   </button>
                 </div>
@@ -398,15 +333,7 @@ function swatchClass(theme: ThemeId): string {
   return "bg-swatch-brass";
 }
 
-function ModeButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: string;
-}) {
+function ModeButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: string }) {
   return (
     <button
       type="button"
@@ -414,27 +341,6 @@ function ModeButton({
       onClick={onClick}
       className={"h-10 rounded-lg text-sm font-medium " + (active ? "bg-ink text-cream" : "text-mute")}
     >
-      {children}
-    </button>
-  );
-}
-
-function ActionButton({
-  icon,
-  onClick,
-  children,
-}: {
-  icon: React.ReactNode;
-  onClick: () => void;
-  children: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-paper px-3 text-sm font-medium text-ink"
-    >
-      {icon}
       {children}
     </button>
   );
