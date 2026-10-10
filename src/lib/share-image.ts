@@ -140,14 +140,37 @@ function wrapText(
   if (line) ctx.fillText(line, x, yy);
 }
 
+/** Force download that works better on mobile browsers. */
 export async function downloadCardImage(profile: Profile) {
   const blob = await renderCardImage(profile);
+  const filename = `${(profile.fullName || "calling-card").replace(/\s+/g, "-").toLowerCase()}.png`;
+
+  // Try the File System Access API first (Chrome/Edge on desktop + some Android)
+  if ("showSaveFilePicker" in window) {
+    try {
+      const handle = await (window as any).showSaveFilePicker({
+        suggestedName: filename,
+        types: [{ description: "PNG image", accept: { "image/png": [".png"] } }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      return;
+    } catch {
+      // user cancelled or not supported — fall through
+    }
+  }
+
+  // Classic download (works on most phones — file goes to Downloads)
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `${(profile.fullName || "card").replace(/\s+/g, "-").toLowerCase()}.png`;
+  a.download = filename;
+  a.style.display = "none";
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
 
 function canNativeShareFiles(file: File): boolean {
