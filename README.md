@@ -4,7 +4,7 @@ A professional digital business card app with QR codes, contact sharing (vCard /
 
 Built with **TanStack Start**, **React 19**, **Tailwind CSS**, **Zustand**, and optional **Better Auth** + PGLite/Postgres.
 
-**Live site:** https://digital-business-card.vercel.app (or the latest production deployment on Vercel)
+**Live site:** https://digital-business-card-samuelchristopher344-beep.vercel.app
 
 ## Features that work (local-first)
 
@@ -17,34 +17,46 @@ Built with **TanStack Start**, **React 19**, **Tailwind CSS**, **Zustand**, and 
 - Shareable hash-encoded profile links (`#c=...`)
 - Local storage persistence of the profile (and multi-card support)
 - Responsive layout (mobile → desktop)
+- Shared/downloaded card **image includes a large scannable QR code**
 
-## Phone app (Android)
+## Phone apps (Android + iOS)
 
-Capacitor is fully prepared. You do **not** need a computer with Android Studio.
+Capacitor wraps the live web app in a native shell for both platforms.
 
-### Easiest way – download a ready APK
+### Android – download APK
 
-1. Go to the repository **Actions** tab:  
-   https://github.com/samuelchristopher344-beep/digital-business-card/actions
-2. Open the workflow **Build Android APK**
-3. Click **Run workflow** (or wait for the automatic run after a push)
-4. When it finishes, download the artifact named **Calling-Card-debug**
-5. Open the `.apk` on your Android phone and install it  
-   (you may need to allow “Install from unknown sources”)
+1. Go to **Actions**: https://github.com/samuelchristopher344-beep/digital-business-card/actions  
+2. Open **Build Android APK** → **Run workflow** (or wait for auto-run)  
+3. Download artifact **Calling-Card-debug**  
+4. Install the `.apk` on your Android phone (allow unknown sources if asked)
 
-The APK is rebuilt automatically on every relevant push to `main`.
+### iOS – simulator build (free)
 
-### Alternative – load the live website inside a native shell
+1. Same **Actions** tab → open **Build iOS**  
+2. **Run workflow**  
+3. Download **Calling-Card-ios-simulator** (zipped `.app` for iOS Simulator)  
 
-If you prefer the native app to always show the latest live website (instead of a bundled static build), edit `capacitor.config.ts` and uncomment the `url` line pointing to your Vercel deployment, then re-run the build workflow.
+**Real iPhone / App Store** requires:
+- A Mac with Xcode, **or** this GitHub Action + signing secrets  
+- **Apple Developer Program** ($99/year)  
+- Signing certificate + provisioning profile  
 
-### Local / cloud development (optional)
+On a Mac:
 
 ```bash
 npm install
-node scripts/setup-capacitor.mjs   # builds + adds Android + syncs
-npx cap open android               # opens Android Studio
-npx cap run android                # run on device/emulator
+node scripts/setup-capacitor.mjs ios
+npx cap open ios          # opens Xcode
+npx cap run ios           # simulator or device
+```
+
+### Local setup (both platforms)
+
+```bash
+npm install
+node scripts/setup-capacitor.mjs          # Android + iOS (iOS only on Mac)
+node scripts/setup-capacitor.mjs android  # Android only
+node scripts/setup-capacitor.mjs ios      # iOS only (Mac)
 ```
 
 ## Getting started (web)
@@ -57,8 +69,8 @@ npm run dev
 App runs on port **8080** by default.
 
 ```bash
-npm run build   # production build
-npm run preview # local production preview
+npm run build
+npm run preview
 ```
 
 ## Environment
@@ -74,24 +86,14 @@ Never commit real secrets.
 - Tailwind CSS 4
 - Zustand
 - `qrcode` for SVG QR generation
-- Capacitor 7 (Android packaging)
+- Capacitor 7 (Android + iOS)
 - Better Auth + PGLite / Postgres (optional)
 
 ## Repository status
 
-**Core app (ready)**  
-Main UI, QR, profile editor, themes, local storage, vCard/MeCard, card types, international phone.
-
-**Capacitor / Android (ready for APK)**  
-- `capacitor.config.ts`  
-- packages + scripts  
-- GitHub Action that produces a downloadable debug APK  
-- `scripts/setup-capacitor.mjs`
-
-**Still optional / unfinished**
-- Full Better Auth client + server wiring
-- Real multi-card management UI
-- Full offline PWA service worker
-- iOS platform (can be added the same way)
+**Core app (ready)** — UI, QR, profile, themes, vCard/MeCard, share image with QR  
+**Android** — Capacitor + GitHub Action for debug APK  
+**iOS** — Capacitor package + scripts + GitHub Action (simulator build)  
+**App Store / Play Store** — need developer accounts + signing for public release
 
 Repo: https://github.com/samuelchristopher344-beep/digital-business-card

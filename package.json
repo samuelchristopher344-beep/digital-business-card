@@ -16,6 +16,9 @@
     "android:dev": "npm run build && npx cap sync android",
     "android:run": "npx cap run android",
     "android:open": "npx cap open android",
+    "ios:dev": "npm run build && npx cap sync ios",
+    "ios:run": "npx cap run ios",
+    "ios:open": "npx cap open ios",
     "typecheck": "tsc --noEmit",
     "test": "node --test 'scripts/**/*.test.mjs' 2>/dev/null || echo 'No unit tests present yet'",
     "lint": "eslint .",
@@ -24,6 +27,7 @@
   "dependencies": {
     "@capacitor/android": "^7.0.1",
     "@capacitor/core": "^7.0.1",
+    "@capacitor/ios": "^7.0.1",
     "@electric-sql/pglite": "^0.5.4",
     "@hookform/resolvers": "^5.7.0",
     "@radix-ui/react-accordion": "^1.2.12",

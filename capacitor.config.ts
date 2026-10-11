@@ -6,8 +6,8 @@ const config: CapacitorConfig = {
   webDir: '.output/public',
   server: {
     androidScheme: 'https',
-    // IMPORTANT: digital-business-card.vercel.app is a DIFFERENT site (Jose Luis Bravo).
-    // This project's real production URL is below.
+    iosScheme: 'https',
+    // Live production site loaded inside the native shell
     url: 'https://digital-business-card-samuelchristopher344-beep.vercel.app',
   },
   plugins: {
@@ -17,6 +17,10 @@ const config: CapacitorConfig = {
   },
   android: {
     allowMixedContent: true,
+  },
+  ios: {
+    contentInset: 'automatic',
+    preferredContentMode: 'mobile',
   },
 };
 

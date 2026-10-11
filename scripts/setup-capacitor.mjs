@@ -1,23 +1,33 @@
 #!/usr/bin/env node
 
 /**
- * Setup script to initialize Capacitor and Android project.
- * Run after: npm install
- * Usage: node scripts/setup-capacitor.mjs
+ * Setup Capacitor for Android and/or iOS.
  *
- * On CI / GitHub Actions the same steps are automated by
- * .github/workflows/build-android.yml
+ * Usage:
+ *   node scripts/setup-capacitor.mjs          # both platforms
+ *   node scripts/setup-capacitor.mjs android  # Android only
+ *   node scripts/setup-capacitor.mjs ios      # iOS only (needs macOS)
+ *
+ * CI automates the same steps in:
+ *   .github/workflows/build-android.yml
+ *   .github/workflows/build-ios.yml
  */
 
 import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 
 const root = process.cwd();
 const androidDir = path.join(root, 'android');
+const iosDir = path.join(root, 'ios');
 const webDir = path.join(root, '.output', 'public');
+const arg = (process.argv[2] || 'both').toLowerCase();
+const wantAndroid = arg === 'both' || arg === 'android';
+const wantIos = arg === 'both' || arg === 'ios';
+const isMac = os.platform() === 'darwin';
 
-console.log('🚀 Setting up Capacitor for Android...\n');
+console.log('🚀 Setting up Capacitor...\n');
 
 try {
   const configPath = path.join(root, 'capacitor.config.ts');
@@ -42,7 +52,7 @@ try {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Calling Card</title>
-  <script>window.location.replace('https://digital-business-card.vercel.app');</script>
+  <script>window.location.replace('https://digital-business-card-samuelchristopher344-beep.vercel.app');</script>
 </head>
 <body><p>Loading Calling Card…</p></body>
 </html>
@@ -53,23 +63,43 @@ try {
     console.log('✅ Found web assets at .output/public');
   }
 
-  if (!fs.existsSync(androidDir)) {
-    console.log('\n📱 Adding Android platform...');
-    execSync('npx cap add android', { stdio: 'inherit' });
-  } else {
-    console.log('\n📱 Android platform already exists, skipping add.');
+  if (wantAndroid) {
+    if (!fs.existsSync(androidDir)) {
+      console.log('\n📱 Adding Android platform...');
+      execSync('npx cap add android', { stdio: 'inherit' });
+    } else {
+      console.log('\n📱 Android platform already exists, skipping add.');
+    }
+    console.log('🔄 Syncing Android...');
+    execSync('npx cap sync android', { stdio: 'inherit' });
   }
 
-  console.log('\n🔄 Syncing web assets to Android...');
-  execSync('npx cap sync android', { stdio: 'inherit' });
+  if (wantIos) {
+    if (!isMac) {
+      console.log('\n⚠️  iOS platform can only be added/built on macOS.');
+      console.log('   Use GitHub Actions (Build iOS) or a Mac, then run:');
+      console.log('   node scripts/setup-capacitor.mjs ios');
+    } else {
+      if (!fs.existsSync(iosDir)) {
+        console.log('\n🍎 Adding iOS platform...');
+        execSync('npx cap add ios', { stdio: 'inherit' });
+      } else {
+        console.log('\n🍎 iOS platform already exists, skipping add.');
+      }
+      console.log('🔄 Syncing iOS...');
+      execSync('npx cap sync ios', { stdio: 'inherit' });
+    }
+  }
 
   console.log('\n✅ Capacitor setup complete!');
   console.log('\nNext steps:');
-  console.log('  • Open Android Studio:  npx cap open android');
-  console.log('  • Run on device/emulator: npx cap run android');
-  console.log('  • Or build APK manually:  cd android && ./gradlew assembleDebug');
-  console.log('\nOr just let GitHub Actions build the APK for you');
-  console.log('  (Actions → Build Android APK → download artifact).');
+  if (wantAndroid) {
+    console.log('  Android:  npx cap open android  |  npx cap run android');
+  }
+  if (wantIos && isMac) {
+    console.log('  iOS:      npx cap open ios      |  npx cap run ios');
+  }
+  console.log('\nOr use GitHub Actions → Build Android APK / Build iOS');
 } catch (error) {
   console.error('❌ Setup failed:', error.message);
   process.exit(1);
