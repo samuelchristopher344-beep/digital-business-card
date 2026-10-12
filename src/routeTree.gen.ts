@@ -10,88 +10,284 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AvailabilityRouteImport } from './routes/availability'
+import { Route as CardsRouteImport } from './routes/cards'
+import { Route as ContactsRouteImport } from './routes/contacts'
 import { Route as CreateRouteImport } from './routes/create'
 import { Route as EditRouteImport } from './routes/edit'
+import { Route as EventModeRouteImport } from './routes/event-mode'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ScanRouteImport } from './routes/scan'
+import { Route as SecurityRouteImport } from './routes/security'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as USlugRouteImport } from './routes/u.$slug'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiCardsUsernameRouteImport } from './routes/api/cards/$username'
+import { Route as ApiCardsMeRouteImport } from './routes/api/cards/me'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-
+const AvailabilityRoute = AvailabilityRouteImport.update({
+  id: '/availability',
+  path: '/availability',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CardsRoute = CardsRouteImport.update({
+  id: '/cards',
+  path: '/cards',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactsRoute = ContactsRouteImport.update({
+  id: '/contacts',
+  path: '/contacts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CreateRoute = CreateRouteImport.update({
   id: '/create',
   path: '/create',
   getParentRoute: () => rootRouteImport,
 } as any)
-
 const EditRoute = EditRouteImport.update({
   id: '/edit',
   path: '/edit',
   getParentRoute: () => rootRouteImport,
 } as any)
-
+const EventModeRoute = EventModeRouteImport.update({
+  id: '/event-mode',
+  path: '/event-mode',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InsightsRoute = InsightsRouteImport.update({
+  id: '/insights',
+  path: '/insights',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScanRoute = ScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SecurityRoute = SecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
-
 const USlugRoute = USlugRouteImport.update({
   id: '/u/$slug',
   path: '/u/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCardsUsernameRoute = ApiCardsUsernameRouteImport.update({
+  id: '/api/cards/$username',
+  path: '/api/cards/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCardsMeRoute = ApiCardsMeRouteImport.update({
+  id: '/api/cards/me',
+  path: '/api/cards/me',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/availability': typeof AvailabilityRoute
+  '/cards': typeof CardsRoute
+  '/contacts': typeof ContactsRoute
   '/create': typeof CreateRoute
   '/edit': typeof EditRoute
+  '/event-mode': typeof EventModeRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/scan': typeof ScanRoute
+  '/security': typeof SecurityRoute
+  '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/u/$slug': typeof USlugRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cards/$username': typeof ApiCardsUsernameRoute
+  '/api/cards/me': typeof ApiCardsMeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/availability': typeof AvailabilityRoute
+  '/cards': typeof CardsRoute
+  '/contacts': typeof ContactsRoute
   '/create': typeof CreateRoute
   '/edit': typeof EditRoute
+  '/event-mode': typeof EventModeRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/scan': typeof ScanRoute
+  '/security': typeof SecurityRoute
+  '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/u/$slug': typeof USlugRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cards/$username': typeof ApiCardsUsernameRoute
+  '/api/cards/me': typeof ApiCardsMeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/availability': typeof AvailabilityRoute
+  '/cards': typeof CardsRoute
+  '/contacts': typeof ContactsRoute
   '/create': typeof CreateRoute
   '/edit': typeof EditRoute
+  '/event-mode': typeof EventModeRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/scan': typeof ScanRoute
+  '/security': typeof SecurityRoute
+  '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/u/$slug': typeof USlugRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cards/$username': typeof ApiCardsUsernameRoute
+  '/api/cards/me': typeof ApiCardsMeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/create' | '/edit' | '/login' | '/signup' | '/u/$slug'
+  fullPaths:
+    | '/'
+    | '/availability'
+    | '/cards'
+    | '/contacts'
+    | '/create'
+    | '/edit'
+    | '/event-mode'
+    | '/forgot-password'
+    | '/insights'
+    | '/login'
+    | '/privacy'
+    | '/reset-password'
+    | '/scan'
+    | '/security'
+    | '/settings'
+    | '/signup'
+    | '/u/$slug'
+    | '/api/auth/$'
+    | '/api/cards/$username'
+    | '/api/cards/me'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/create' | '/edit' | '/login' | '/signup' | '/u/$slug'
-  id: '__root__' | '/' | '/create' | '/edit' | '/login' | '/signup' | '/u/$slug'
+  to:
+    | '/'
+    | '/availability'
+    | '/cards'
+    | '/contacts'
+    | '/create'
+    | '/edit'
+    | '/event-mode'
+    | '/forgot-password'
+    | '/insights'
+    | '/login'
+    | '/privacy'
+    | '/reset-password'
+    | '/scan'
+    | '/security'
+    | '/settings'
+    | '/signup'
+    | '/u/$slug'
+    | '/api/auth/$'
+    | '/api/cards/$username'
+    | '/api/cards/me'
+  id:
+    | '__root__'
+    | '/'
+    | '/availability'
+    | '/cards'
+    | '/contacts'
+    | '/create'
+    | '/edit'
+    | '/event-mode'
+    | '/forgot-password'
+    | '/insights'
+    | '/login'
+    | '/privacy'
+    | '/reset-password'
+    | '/scan'
+    | '/security'
+    | '/settings'
+    | '/signup'
+    | '/u/$slug'
+    | '/api/auth/$'
+    | '/api/cards/$username'
+    | '/api/cards/me'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AvailabilityRoute: typeof AvailabilityRoute
+  CardsRoute: typeof CardsRoute
+  ContactsRoute: typeof ContactsRoute
   CreateRoute: typeof CreateRoute
   EditRoute: typeof EditRoute
+  EventModeRoute: typeof EventModeRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
+  InsightsRoute: typeof InsightsRoute
   LoginRoute: typeof LoginRoute
+  PrivacyRoute: typeof PrivacyRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  ScanRoute: typeof ScanRoute
+  SecurityRoute: typeof SecurityRoute
+  SettingsRoute: typeof SettingsRoute
   SignupRoute: typeof SignupRoute
   USlugRoute: typeof USlugRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiCardsUsernameRoute: typeof ApiCardsUsernameRoute
+  ApiCardsMeRoute: typeof ApiCardsMeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -101,6 +297,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/availability': {
+      id: '/availability'
+      path: '/availability'
+      fullPath: '/availability'
+      preLoaderRoute: typeof AvailabilityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cards': {
+      id: '/cards'
+      path: '/cards'
+      fullPath: '/cards'
+      preLoaderRoute: typeof CardsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contacts': {
+      id: '/contacts'
+      path: '/contacts'
+      fullPath: '/contacts'
+      preLoaderRoute: typeof ContactsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/create': {
@@ -117,11 +334,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EditRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/event-mode': {
+      id: '/event-mode'
+      path: '/event-mode'
+      fullPath: '/event-mode'
+      preLoaderRoute: typeof EventModeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/insights': {
+      id: '/insights'
+      path: '/insights'
+      fullPath: '/insights'
+      preLoaderRoute: typeof InsightsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scan': {
+      id: '/scan'
+      path: '/scan'
+      fullPath: '/scan'
+      preLoaderRoute: typeof ScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/security': {
+      id: '/security'
+      path: '/security'
+      fullPath: '/security'
+      preLoaderRoute: typeof SecurityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signup': {
@@ -138,16 +411,51 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof USlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cards/$username': {
+      id: '/api/cards/$username'
+      path: '/api/cards/$username'
+      fullPath: '/api/cards/$username'
+      preLoaderRoute: typeof ApiCardsUsernameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cards/me': {
+      id: '/api/cards/me'
+      path: '/api/cards/me'
+      fullPath: '/api/cards/me'
+      preLoaderRoute: typeof ApiCardsMeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AvailabilityRoute: AvailabilityRoute,
+  CardsRoute: CardsRoute,
+  ContactsRoute: ContactsRoute,
   CreateRoute: CreateRoute,
   EditRoute: EditRoute,
+  EventModeRoute: EventModeRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
+  InsightsRoute: InsightsRoute,
   LoginRoute: LoginRoute,
+  PrivacyRoute: PrivacyRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  ScanRoute: ScanRoute,
+  SecurityRoute: SecurityRoute,
+  SettingsRoute: SettingsRoute,
   SignupRoute: SignupRoute,
   USlugRoute: USlugRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiCardsUsernameRoute: ApiCardsUsernameRoute,
+  ApiCardsMeRoute: ApiCardsMeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
