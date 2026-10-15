@@ -14,6 +14,7 @@ import {
   xHref,
   type Profile,
 } from "@/lib/profile";
+import { showcaseImageUrl } from "@/lib/showcase";
 
 function Row({
   href,
@@ -98,6 +99,42 @@ function XIcon() {
   );
 }
 
+function ShowcaseStrip({ profile }: { profile: Profile }) {
+  const items = profile.showcase ?? [];
+  if (items.length === 0) return null;
+
+  return (
+    <div className="px-6 pb-5 sm:px-7">
+      <p className="mb-2 text-xs tracking-widest text-card-mute uppercase">Showcase</p>
+      <ul className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {items.map((item) => {
+          const src = showcaseImageUrl(item.text, profile.cardType);
+          return (
+            <li key={item.id} className="w-28 shrink-0 sm:w-32">
+              <div className="overflow-hidden rounded-xl border border-card-line bg-paper">
+                {src ? (
+                  <img
+                    src={src}
+                    alt=""
+                    loading="lazy"
+                    className="aspect-[3/4] w-full object-cover"
+                  />
+                ) : (
+                  <div className="aspect-[3/4] w-full bg-card-line/40" />
+                )}
+              </div>
+              <p className="mt-1.5 line-clamp-2 text-[11px] leading-snug text-card-mute">{item.text}</p>
+            </li>
+          );
+        })}
+      </ul>
+      <p className="mt-2 text-[10px] leading-relaxed text-card-mute">
+        Illustrative looks from the owner&apos;s description — not photos of real clients.
+      </p>
+    </div>
+  );
+}
+
 export function CallingCard({ profile }: { profile: Profile }) {
   const site = hrefForWebsite(profile.website);
   const wa = whatsappHref(profile.whatsapp);
@@ -133,6 +170,8 @@ export function CallingCard({ profile }: { profile: Profile }) {
 
       <div className="mx-6 mt-6 border-t border-card-line sm:mx-7" />
 
+      <ShowcaseStrip profile={profile} />
+
       <ul className="grid gap-3 px-6 py-5 sm:px-7">
         {profile.email ? (
           <Row href={`mailto:${profile.email}`} icon={<Mail className="size-5" />} label="Email" value={profile.email} />
@@ -140,21 +179,22 @@ export function CallingCard({ profile }: { profile: Profile }) {
         {fullPhone ? (
           <Row href={`tel:${fullPhone}`} icon={<Phone className="size-5" />} label="Phone" value={phoneDisplay || fullPhone} />
         ) : null}
-        {wa ? (
-          <Row href={wa} icon={<WhatsAppIcon />} label="WhatsApp" value={profile.whatsapp} />
-        ) : null}
+        {wa ? <Row href={wa} icon={<WhatsAppIcon />} label="WhatsApp" value={profile.whatsapp} /> : null}
         {tg ? (
           <Row href={tg} icon={<TelegramIcon />} label="Telegram" value={profile.telegram.replace(/^@/, "")} />
         ) : null}
         {li ? (
-          <Row href={li} icon={<LinkedInIcon />} label="LinkedIn" value={profile.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\//i, "")} />
+          <Row
+            href={li}
+            icon={<LinkedInIcon />}
+            label="LinkedIn"
+            value={profile.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\//i, "")}
+          />
         ) : null}
         {ig ? (
           <Row href={ig} icon={<InstagramIcon />} label="Instagram" value={profile.instagram.replace(/^@/, "")} />
         ) : null}
-        {xLink ? (
-          <Row href={xLink} icon={<XIcon />} label="X" value={profile.x.replace(/^@/, "")} />
-        ) : null}
+        {xLink ? <Row href={xLink} icon={<XIcon />} label="X" value={profile.x.replace(/^@/, "")} /> : null}
         {site ? (
           <Row href={site} icon={<Globe className="size-5" />} label="Web" value={displayHost(profile.website)} />
         ) : null}
