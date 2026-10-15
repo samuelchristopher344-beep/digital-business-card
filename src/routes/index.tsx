@@ -33,7 +33,7 @@ function Landing() {
           <div className="flex flex-col gap-6">
             <div className="inline-flex w-fit items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
               <Sparkles className="size-3.5 text-amber-600" aria-hidden="true" />
-              Digital calling card · account optional
+              For personal, business, or brand · account optional
             </div>
 
             <h1 className="font-serif text-4xl leading-[1.1] tracking-tight sm:text-5xl">
@@ -45,8 +45,8 @@ function Landing() {
             </h1>
 
             <p className="max-w-md text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-              Your card, QR, and WhatsApp-ready image in one place. They save you in one tap —
-              private notes stay only on your device.
+              One card to hand over — for personal contacts, freelancers, shops, or brands.
+              QR, WhatsApp image, and save-to-phone in one place. Private notes stay only on your device.
             </p>
 
             <div className="flex flex-wrap gap-3">
@@ -68,7 +68,7 @@ function Landing() {
 
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-zinc-500">
               <span className="inline-flex items-center gap-1.5">
-                <Check className="size-3.5 text-emerald-600" /> Free to start
+                <Check className="size-3.5 text-emerald-600" /> Personal, business & brand
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <Check className="size-3.5 text-emerald-600" /> No account needed
@@ -130,7 +130,6 @@ function Landing() {
         </div>
       </section>
 
-      {/* Account: clear yes / no decision */}
       <section className="border-y border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
         <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6">
           <div className="max-w-2xl">
@@ -144,7 +143,6 @@ function Landing() {
           </div>
 
           <div className="mt-8 grid gap-4 lg:grid-cols-2">
-            {/* Without account */}
             <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5 sm:p-6 dark:border-zinc-700 dark:bg-zinc-950">
               <p className="text-xs font-semibold tracking-wide text-zinc-500 uppercase">
                 Without an account
@@ -167,7 +165,6 @@ function Landing() {
               </Link>
             </div>
 
-            {/* With account */}
             <div className="rounded-2xl border border-zinc-900 bg-zinc-900 p-5 text-white sm:p-6 dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900">
               <p className="text-xs font-semibold tracking-wide text-white/60 uppercase dark:text-zinc-500">
                 With an account
