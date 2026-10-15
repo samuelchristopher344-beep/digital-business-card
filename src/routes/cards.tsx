@@ -24,11 +24,38 @@ function CardsPage() {
       <p className="text-xs font-semibold tracking-[0.2em] text-zinc-500 uppercase">Identity</p>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">Your cards</h1>
       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-        Up to {MAX_CARDS} cards (work, side project, event…). Switch which one you share. Stored on
-        this device.
+        Up to {MAX_CARDS} cards — work, personal, event, brand. The active card is the one you share and edit.
+        Stored on this device.
       </p>
 
-      <ul className="mt-8 space-y-3">
+      <div className="mt-6 flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Active card">
+        {cards.map((c) => {
+          const selected = c.id === active;
+          return (
+            <button
+              key={`chip-${c.id}`}
+              type="button"
+              role="tab"
+              aria-selected={selected}
+              onClick={() => {
+                setActiveCard(c.id);
+                setTick((n) => n + 1);
+              }}
+              className={
+                "inline-flex h-10 shrink-0 items-center rounded-full border px-4 text-sm font-medium " +
+                (selected
+                  ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
+                  : "border-zinc-200 bg-white text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300")
+              }
+            >
+              {c.label || c.profile.fullName || "Card"}
+            </button>
+          );
+        })}
+      </div>
+      <p className="mt-2 text-xs text-zinc-500">Tap a chip to make it active for share & edit.</p>
+
+      <ul className="mt-6 space-y-3">
         {cards.map((c) => (
           <li
             key={c.id}
