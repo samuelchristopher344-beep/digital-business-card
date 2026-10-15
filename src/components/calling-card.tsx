@@ -15,6 +15,7 @@ import {
   type Profile,
 } from "@/lib/profile";
 import { nameSizeClass, showcaseImageUrl } from "@/lib/showcase";
+import { ShowcaseImage } from "@/components/showcase-image";
 
 function Row({
   href,
@@ -112,13 +113,10 @@ function ShowcaseStrip({ profile }: { profile: Profile }) {
           return (
             <li key={item.id} className="w-28 shrink-0 sm:w-32">
               <div className="overflow-hidden rounded-xl border border-card-line bg-paper">
-                {src ? (
-                  <img
-                    src={src}
-                    alt=""
-                    loading="lazy"
-                    className="aspect-[3/4] w-full object-cover"
-                  />
+                {item.photoUrl ? (
+                  <ShowcaseImage src={item.photoUrl} />
+                ) : src ? (
+                  <ShowcaseImage src={src} />
                 ) : (
                   <div className="aspect-[3/4] w-full bg-card-line/40" />
                 )}
@@ -129,7 +127,7 @@ function ShowcaseStrip({ profile }: { profile: Profile }) {
         })}
       </ul>
       <p className="mt-2 text-[10px] leading-relaxed text-card-mute">
-        Illustrative looks from the owner&apos;s description — not photos of real clients.
+        Illustrative looks from the owner's description — not photos of real clients.
       </p>
     </div>
   );
@@ -167,6 +165,11 @@ export function CallingCard({ profile }: { profile: Profile }) {
         {profile.role ? <p className="mt-2 text-sm tracking-wide text-accent">{profile.role}</p> : null}
         {profile.tagline ? (
           <p className="mt-3 max-w-sm text-sm leading-relaxed text-card-mute">{profile.tagline}</p>
+        ) : null}
+        {profile.scanMessage?.trim() ? (
+          <p className="mt-4 max-w-sm rounded-xl border border-card-line bg-paper/60 px-3 py-2 text-sm leading-relaxed text-card-fg">
+            {profile.scanMessage.trim()}
+          </p>
         ) : null}
       </div>
 
