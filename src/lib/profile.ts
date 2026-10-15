@@ -89,8 +89,8 @@ export const DEMO_PROFILE: Profile = {
   note: "Drones, propulsion, marine craft, and future mobility — ideas into prototypes.",
   focus: ["Drones", "Propulsion", "Marine", "Electronics"],
   showcase: [
-    { id: "demo-1", text: "Compact drone prototype on workbench" },
-    { id: "demo-2", text: "Marine craft concept sketch to model" },
+    { id: "demo-1", text: "Compact drone prototype on workbench", style: "workspace" },
+    { id: "demo-2", text: "Marine craft concept sketch to model", style: "product" },
   ],
   theme: "brass",
   cardType: "business",
@@ -108,6 +108,9 @@ const cardTypeSchema = z.enum(["personal", "business", "company", "org", "event"
 const showcaseItemSchema = z.object({
   id: z.string().max(48),
   text: z.string().max(64),
+  style: z
+    .enum(["auto", "outfit", "product", "food", "event", "workspace", "portrait"])
+    .optional(),
 });
 
 const packedSchema = z.object({
@@ -183,6 +186,7 @@ function pack(profile: Profile): z.infer<typeof packedSchema> {
     packed.sc = normalizeShowcase(profile.showcase).map((item) => ({
       id: item.id,
       text: item.text,
+      ...(item.style && item.style !== "auto" ? { style: item.style } : {}),
     }));
   }
   if (profile.theme !== "brass") packed.h = profile.theme;
