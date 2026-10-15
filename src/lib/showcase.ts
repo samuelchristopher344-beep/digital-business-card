@@ -14,10 +14,10 @@ export type ShowcaseStyleId = (typeof SHOWCASE_STYLES)[number]["id"];
 
 export type ShowcaseItem = {
   id: string;
-  /** What the user wrote — drives the generated look */
   text: string;
-  /** Optional image type; auto uses card type + text */
   style?: ShowcaseStyleId;
+  /** Optional own photo (data URL or https) — overrides generated image */
+  photoUrl?: string;
 };
 
 export const SHOWCASE_MAX = 6;
@@ -34,7 +34,6 @@ export function isShowcaseStyleId(value: string): value is ShowcaseStyleId {
   return SHOWCASE_STYLES.some((s) => s.id === value);
 }
 
-/** Stable seed so the same text+style keeps a consistent image. */
 export function seedFromText(text: string, style: string = "auto"): number {
   let h = 2166136261;
   const s = `${text.trim().toLowerCase()}|${style}`;
@@ -81,7 +80,6 @@ function styleHintFromPick(style: ShowcaseStyleId, cardType: CardTypeId): string
   }
 }
 
-/** Suggest a style from the user's words when they leave Auto. */
 export function suggestStyleFromText(text: string): ShowcaseStyleId {
   const t = text.toLowerCase();
   if (/(dress|gown|outfit|lace|aso|owambe|gele|agbada|suit|uniform|corset|bridal|fashion|blouse|ankara)/.test(t))
@@ -94,10 +92,6 @@ export function suggestStyleFromText(text: string): ShowcaseStyleId {
   return "auto";
 }
 
-/**
- * Build an image URL from the user's own words + optional style.
- * Images are illustrative — not photos of real clients.
- */
 export function showcaseImageUrl(
   text: string,
   cardType: CardTypeId = "personal",
@@ -120,20 +114,25 @@ export function normalizeShowcase(items: unknown): ShowcaseItem[] {
   const out: ShowcaseItem[] = [];
   for (const raw of items) {
     if (!raw || typeof raw !== "object") continue;
-    const obj = raw as { id?: unknown; text?: unknown; style?: unknown };
+    const obj = raw as { id?: unknown; text?: unknown; style?: unknown; photoUrl?: unknown };
     const text = typeof obj.text === "string" ? obj.text.trim().slice(0, SHOWCASE_TEXT_MAX) : "";
     if (!text) continue;
     const id =
       typeof obj.id === "string" && obj.id ? obj.id : createShowcaseId();
     const style =
       typeof obj.style === "string" && isShowcaseStyleId(obj.style) ? obj.style : "auto";
-    out.push({ id, text, style });
+    const photoUrl =
+      typeof obj.photoUrl === "string" && obj.photoUrl.trim().startsWith("data:image")
+        ? obj.photoUrl.trim().slice(0, 600_000)
+        : typeof obj.photoUrl === "string" && obj.photoUrl.trim().startsWith("https://")
+          ? obj.photoUrl.trim().slice(0, 500)
+          : undefined;
+    out.push({ id, text, style, ...(photoUrl ? { photoUrl } : {}) });
     if (out.length >= SHOWCASE_MAX) break;
   }
   return out;
 }
 
-/** Name display size on the public card — personal stays calmer. */
 export function nameSizeClass(cardType: CardTypeId, hasShowcase: boolean): string {
   if (cardType === "personal") {
     return hasShowcase
@@ -143,7 +142,6 @@ export function nameSizeClass(cardType: CardTypeId, hasShowcase: boolean): strin
   if (cardType === "company" || cardType === "org") {
     return "font-display text-3xl sm:text-4xl leading-tight font-medium text-balance text-card-fg";
   }
-  // business, creator, event — strong brand name
   return hasShowcase
     ? "font-display text-3xl sm:text-4xl leading-tight font-medium text-balance text-card-fg"
     : "font-display text-4xl leading-tight font-medium text-balance text-card-fg";
