@@ -14,7 +14,7 @@ import {
   xHref,
   type Profile,
 } from "@/lib/profile";
-import { showcaseImageUrl } from "@/lib/showcase";
+import { nameSizeClass, showcaseImageUrl } from "@/lib/showcase";
 
 function Row({
   href,
@@ -108,7 +108,7 @@ function ShowcaseStrip({ profile }: { profile: Profile }) {
       <p className="mb-2 text-xs tracking-widest text-card-mute uppercase">Showcase</p>
       <ul className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {items.map((item) => {
-          const src = showcaseImageUrl(item.text, profile.cardType);
+          const src = showcaseImageUrl(item.text, profile.cardType, item.style ?? "auto");
           return (
             <li key={item.id} className="w-28 shrink-0 sm:w-32">
               <div className="overflow-hidden rounded-xl border border-card-line bg-paper">
@@ -146,6 +146,8 @@ export function CallingCard({ profile }: { profile: Profile }) {
   const fullPhone = getFullPhone(profile);
   const phoneDisplay = formatPhoneDisplay(profile);
   const typeLabel = CARD_TYPES.find((t) => t.id === profile.cardType)?.label || "Personal";
+  const hasShowcase = (profile.showcase ?? []).length > 0;
+  const nameClass = nameSizeClass(profile.cardType || "personal", hasShowcase);
 
   return (
     <article className="card-rise overflow-hidden rounded-card bg-card text-card-fg shadow-card">
@@ -160,15 +162,15 @@ export function CallingCard({ profile }: { profile: Profile }) {
         </div>
       </div>
 
-      <div className="px-6 pt-8 sm:px-7">
-        <h1 className="font-display text-4xl leading-tight font-medium text-balance text-card-fg">{name}</h1>
-        {profile.role ? <p className="mt-3 text-sm tracking-wide text-accent">{profile.role}</p> : null}
+      <div className="px-6 pt-6 sm:px-7 sm:pt-7">
+        <h1 className={nameClass}>{name}</h1>
+        {profile.role ? <p className="mt-2 text-sm tracking-wide text-accent">{profile.role}</p> : null}
         {profile.tagline ? (
-          <p className="mt-4 max-w-sm text-sm leading-relaxed text-card-mute">{profile.tagline}</p>
+          <p className="mt-3 max-w-sm text-sm leading-relaxed text-card-mute">{profile.tagline}</p>
         ) : null}
       </div>
 
-      <div className="mx-6 mt-6 border-t border-card-line sm:mx-7" />
+      <div className="mx-6 mt-5 border-t border-card-line sm:mx-7" />
 
       <ShowcaseStrip profile={profile} />
 
