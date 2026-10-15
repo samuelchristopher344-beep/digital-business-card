@@ -5,6 +5,9 @@ import { AccountBar } from "@/components/account-bar";
 import { CallingCard } from "@/components/calling-card";
 import { QrMark } from "@/components/qr-mark";
 import { ShareActions } from "@/components/share-actions";
+import { CardSwitcher } from "@/components/card-switcher";
+import { CardTips } from "@/components/card-tips";
+import { ShowcaseImage } from "@/components/showcase-image";
 import { useSession } from "@/lib/auth/client";
 import { ensureCardStore, saveActiveProfile } from "@/lib/multi-card";
 import {
@@ -68,6 +71,8 @@ export function CardWorkspace({
   const [focusDraft, setFocusDraft] = useState("");
   const [showcaseDraft, setShowcaseDraft] = useState("");
   const [showcaseStyle, setShowcaseStyle] = useState<ShowcaseStyleId>("auto");
+  const [tipTick, setTipTick] = useState(0);
+  const [focusScanMessage, setFocusScanMessage] = useState(false);
   const [link, setLink] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -133,6 +138,26 @@ export function CardWorkspace({
     }
     update("focus", [...profile.focus, next]);
     setFocusDraft("");
+  }
+
+  function setShowcasePhoto(itemId: string, file: File | null) {
+    if (!file || !file.type.startsWith("image/")) return;
+    if (file.size > 400_000) {
+      setNotice("Photo too large — use under 400KB");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = typeof reader.result === "string" ? reader.result : "";
+      if (!dataUrl.startsWith("data:image")) return;
+      update(
+        "showcase",
+        (profile.showcase ?? []).map((s) =>
+          s.id === itemId ? { ...s, photoUrl: dataUrl } : s,
+        ),
+      );
+    };
+    reader.readAsDataURL(file);
   }
 
   function addShowcase() {
@@ -220,6 +245,33 @@ export function CardWorkspace({
           </div>
 
           <div className="flex min-w-0 flex-col gap-6 lg:col-span-3">
+            <CardSwitcher
+              onSwitch={(card) => {
+                setProfile(card.profile);
+                const full = getFullPhone(card.profile);
+                if (full.startsWith(card.profile.phoneCountry || "+1")) {
+                  setLocalPhone(full.slice((card.profile.phoneCountry || "+1").length));
+                } else {
+                  setLocalPhone(card.profile.phone.replace(/^\+\d+/, ""));
+                }
+              }}
+            />
+            <CardTips
+              key={tipTick}
+              profile={profile}
+              onChange={() => setTipTick((n) => n + 1)}
+              onApply={(id) => {
+                if (id === "scan-message") {
+                  setFocusScanMessage(true);
+                  document.getElementById("scan-message")?.scrollIntoView({ behavior: "smooth", block: "center" });
+                  document.getElementById("scan-message")?.focus();
+                }
+                if (id === "showcase") {
+                  document.getElementById("showcase-draft")?.scrollIntoView({ behavior: "smooth", block: "center" });
+                }
+              }}
+            />
+
             {signedIn ? (
               <section className="rounded-card border border-line bg-cream p-4 sm:p-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
@@ -321,6 +373,23 @@ export function CardWorkspace({
                 <textarea value={profile.note} maxLength={280} rows={3} onChange={(event) => update("note", event.target.value)} className="rounded-xl border border-line bg-paper px-3 py-2 text-sm text-ink outline-none focus-visible:ring-2 focus-visible:ring-accent" />
               </label>
 
+              <label className="mt-4 flex flex-col gap-1.5">
+                <span className="text-xs font-medium tracking-wide text-mute uppercase">Message after scan</span>
+                <textarea
+                  id="scan-message"
+                  value={profile.scanMessage || ""}
+                  maxLength={160}
+                  rows={2}
+                  placeholder="e.g. Thanks for scanning — WhatsApp me for prices"
+                  onChange={(event) => update("scanMessage", event.target.value)}
+                  className={
+                    "rounded-xl border bg-paper px-3 py-2 text-sm text-ink outline-none focus-visible:ring-2 focus-visible:ring-accent " +
+                    (focusScanMessage ? "border-accent ring-2 ring-accent" : "border-line")
+                  }
+                />
+                <span className="text-[11px] text-mute">Optional. Shown on your card. You write it — we do not track who scanned.</span>
+              </label>
+
               {showFocus ? (
                 <div className="mt-4">
                   <span className="text-xs font-medium tracking-wide text-mute uppercase">Focus tags</span>
@@ -347,12 +416,16 @@ export function CardWorkspace({
                     return (
                       <div key={item.id} className="w-28 shrink-0">
                         <div className="relative overflow-hidden rounded-xl border border-line bg-paper">
-                          {src ? <img src={src} alt="" className="aspect-[3/4] w-full object-cover" loading="lazy" /> : <div className="aspect-[3/4] w-full bg-line/40" />}
+                          {item.photoUrl || src ? <ShowcaseImage src={item.photoUrl || src} /> : <div className="aspect-[3/4] w-full bg-line/40" />}
                           <button type="button" onClick={() => update("showcase", (profile.showcase ?? []).filter((s) => s.id !== item.id))} className="absolute top-1 right-1 rounded-full bg-black/60 p-1 text-white" aria-label={`Remove ${item.text}`}>
                             <X className="size-3.5" />
                           </button>
                         </div>
                         <p className="mt-1 line-clamp-2 text-[11px] text-mute">{item.text}</p>
+                        <label className="mt-1 inline-flex cursor-pointer text-[10px] font-medium text-accent">
+                          Own photo
+                          <input type="file" accept="image/*" className="sr-only" onChange={(e) => { setShowcasePhoto(item.id, e.target.files?.[0] || null); e.target.value = ""; }} />
+                        </label>
                       </div>
                     );
                   })}
@@ -366,7 +439,7 @@ export function CardWorkspace({
                   ))}
                 </div>
                 <div className="mt-2 flex gap-2">
-                  <input value={showcaseDraft} maxLength={SHOWCASE_TEXT_MAX} placeholder="e.g. Green lace owambe dress" onChange={(event) => setShowcaseDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addShowcase(); } }} className="h-11 flex-1 rounded-xl border border-line bg-paper px-3 text-sm text-ink outline-none focus-visible:ring-2 focus-visible:ring-accent" />
+                  <input id="showcase-draft" value={showcaseDraft} maxLength={SHOWCASE_TEXT_MAX} placeholder="e.g. Green lace owambe dress" onChange={(event) => setShowcaseDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addShowcase(); } }} className="h-11 flex-1 rounded-xl border border-line bg-paper px-3 text-sm text-ink outline-none focus-visible:ring-2 focus-visible:ring-accent" />
                   <button type="button" onClick={addShowcase} disabled={(profile.showcase ?? []).length >= SHOWCASE_MAX} className="h-11 rounded-xl bg-ink px-4 text-sm font-medium text-cream disabled:opacity-50">Add look</button>
                 </div>
                 <p className="mt-1.5 text-[11px] text-mute">
