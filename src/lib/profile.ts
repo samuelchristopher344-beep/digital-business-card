@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { normalizeShowcase, type ShowcaseItem } from "@/lib/showcase";
 
 export const THEMES = [
   { id: "brass", label: "Brass" },
@@ -38,6 +39,8 @@ export type Profile = {
   x: string;
   note: string;
   focus: string[];
+  /** Showcase items — gallery generated from the user's own words (any trade). */
+  showcase: ShowcaseItem[];
   theme: ThemeId;
   cardType: CardTypeId;
   username: string;
@@ -61,6 +64,7 @@ export const EMPTY_PROFILE: Profile = {
   x: "",
   note: "",
   focus: [],
+  showcase: [],
   theme: "brass",
   cardType: "personal",
   username: "",
@@ -84,6 +88,10 @@ export const DEMO_PROFILE: Profile = {
   x: "",
   note: "Drones, propulsion, marine craft, and future mobility — ideas into prototypes.",
   focus: ["Drones", "Propulsion", "Marine", "Electronics"],
+  showcase: [
+    { id: "demo-1", text: "Compact drone prototype on workbench" },
+    { id: "demo-2", text: "Marine craft concept sketch to model" },
+  ],
   theme: "brass",
   cardType: "business",
   username: "demo",
@@ -96,6 +104,11 @@ const SLUG_KEY = "calling-card.slug.v1";
 
 const themeSchema = z.enum(["brass", "signal", "tide", "ink"]);
 const cardTypeSchema = z.enum(["personal", "business", "company", "org", "event", "creator"]);
+
+const showcaseItemSchema = z.object({
+  id: z.string().max(48),
+  text: z.string().max(64),
+});
 
 const packedSchema = z.object({
   n: z.string().max(80).optional(),
@@ -115,6 +128,7 @@ const packedSchema = z.object({
   x: z.string().max(80).optional(),
   m: z.string().max(280).optional(),
   f: z.array(z.string().max(24)).max(6).optional(),
+  sc: z.array(showcaseItemSchema).max(6).optional(),
   h: themeSchema.optional(),
   ct: cardTypeSchema.optional(),
   u: z.string().max(40).optional(),
@@ -139,6 +153,7 @@ function unpack(data: z.infer<typeof packedSchema>): Profile {
     x: data.x?.trim() ?? "",
     note: data.m?.trim() ?? "",
     focus: (data.f ?? []).map((item) => item.trim()).filter(Boolean).slice(0, 6),
+    showcase: normalizeShowcase(data.sc),
     theme: data.h ?? "brass",
     cardType: data.ct ?? "personal",
     username: data.u?.trim().toLowerCase() ?? "",
@@ -164,6 +179,12 @@ function pack(profile: Profile): z.infer<typeof packedSchema> {
   if (profile.x) packed.x = profile.x;
   if (profile.note) packed.m = profile.note;
   if (profile.focus.length) packed.f = profile.focus;
+  if (profile.showcase?.length) {
+    packed.sc = normalizeShowcase(profile.showcase).map((item) => ({
+      id: item.id,
+      text: item.text,
+    }));
+  }
   if (profile.theme !== "brass") packed.h = profile.theme;
   if (profile.cardType !== "personal") packed.ct = profile.cardType;
   if (profile.username) packed.u = profile.username;
@@ -409,3 +430,5 @@ export function formatPhoneDisplay(profile: Profile): string {
   if (!full) return "";
   return full.replace(/(\+\d{1,3})(\d{3})(\d{3})(\d+)/, "$1 $2 $3 $4").trim();
 }
+
+export type { ShowcaseItem };
