@@ -36,18 +36,18 @@ import {
 } from "@/lib/showcase";
 
 const COUNTRY_CODES = [
-  { code: "+1", label: "US +1" },
-  { code: "+44", label: "UK +44" },
-  { code: "+234", label: "NG +234" },
-  { code: "+91", label: "IN +91" },
-  { code: "+86", label: "CN +86" },
-  { code: "+49", label: "DE +49" },
-  { code: "+33", label: "FR +33" },
-  { code: "+81", label: "JP +81" },
-  { code: "+55", label: "BR +55" },
-  { code: "+27", label: "ZA +27" },
-  { code: "+61", label: "AU +61" },
-  { code: "+7", label: "RU +7" },
+  { code: "+1", label: "🇺🇸 +1" },
+  { code: "+44", label: "🇬🇧 +44" },
+  { code: "+234", label: "🇳🇬 +234" },
+  { code: "+91", label: "🇮🇳 +91" },
+  { code: "+86", label: "🇨🇳 +86" },
+  { code: "+49", label: "🇩🇪 +49" },
+  { code: "+33", label: "🇫🇷 +33" },
+  { code: "+81", label: "🇯🇵 +81" },
+  { code: "+55", label: "🇧🇷 +55" },
+  { code: "+27", label: "🇿🇦 +27" },
+  { code: "+61", label: "🇦🇺 +61" },
+  { code: "+7", label: "🇷🇺 +7" },
 ];
 
 type Props = {
