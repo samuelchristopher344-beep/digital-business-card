@@ -121,12 +121,15 @@ function ShowcaseStrip({ profile }: { profile: Profile }) {
 
   return (
     <div className="px-6 pb-5 sm:px-7">
-      <p className="mb-2 text-xs tracking-widest text-card-mute uppercase">Showcase</p>
-      <ul className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <p className="mb-3 flex items-center gap-2 text-xs tracking-widest text-card-mute uppercase">
+        <span className="size-2 rounded-full bg-accent" />
+        Showcase
+      </p>
+      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {items.map((item) => {
           const src = showcaseImageUrl(item.text, profile.cardType, item.style ?? "auto");
           return (
-            <li key={item.id} className="w-28 shrink-0 sm:w-32">
+            <li key={item.id} className="min-w-0">
               <div className="overflow-hidden rounded-xl border border-card-line bg-paper">
                 {item.photoUrl ? (
                   <ShowcaseImage src={item.photoUrl} />
@@ -136,12 +139,12 @@ function ShowcaseStrip({ profile }: { profile: Profile }) {
                   <div className="aspect-[3/4] w-full bg-card-line/40" />
                 )}
               </div>
-              <p className="mt-1.5 line-clamp-2 text-[11px] leading-snug text-card-mute">{item.text}</p>
+              <p className="mt-2 line-clamp-2 text-center text-[11px] leading-snug text-card-mute">{item.text}</p>
             </li>
           );
         })}
       </ul>
-      <p className="mt-2 text-[10px] leading-relaxed text-card-mute">
+      <p className="mt-3 text-[10px] leading-relaxed text-card-mute">
         Illustrative looks from the owner's description — not photos of real clients.
       </p>
     </div>
@@ -165,23 +168,44 @@ export function CallingCard({ profile }: { profile: Profile }) {
 
   return (
     <article className="card-rise overflow-hidden rounded-card bg-card text-card-fg shadow-card">
-      <div className="flex items-center gap-3 px-6 pt-6 sm:px-7 sm:pt-7">
-        <InitialsAvatar name={profile.fullName} />
-        <div className="min-w-0 flex-1">
+      {/* Header: avatar + org left, type badge right */}
+      <div className="flex items-center justify-between gap-3 px-6 pt-6 sm:px-7 sm:pt-7">
+        <div className="flex min-w-0 items-center gap-3">
+          <InitialsAvatar name={profile.fullName} />
           <p className="truncate text-sm font-medium tracking-wide text-card-mute">{orgLine}</p>
         </div>
+        <span className="shrink-0 rounded-full border border-accent/40 px-3 py-1 text-xs tracking-wide text-accent">
+          {typeLabel}
+        </span>
       </div>
 
-      <div className="px-6 pt-5 sm:px-7 sm:pt-6">
+      <div className="px-6 pt-4 sm:px-7 sm:pt-5">
         <h1 className={nameClass}>{name}</h1>
-        {profile.role ? <p className="mt-2 text-sm tracking-wide text-accent">{profile.role}</p> : null}
+        {profile.role ? <p className="mt-1 text-base font-medium tracking-wide text-accent sm:text-lg">{profile.role}</p> : null}
         {profile.tagline ? (
-          <p className="mt-3 max-w-sm text-sm leading-relaxed text-card-mute">{profile.tagline}</p>
+          <p className="mt-2 max-w-sm text-sm leading-relaxed text-card-mute">{profile.tagline}</p>
         ) : null}
+
+        {/* Focus tags higher, right after intro */}
+        {profile.focus.length > 0 ? (
+          <ul className="mt-4 flex flex-wrap gap-2">
+            {profile.focus.map((tag) => (
+              <li
+                key={tag}
+                className="rounded-full border border-card-line bg-paper/40 px-3 py-1 text-xs tracking-wide text-card-mute"
+              >
+                {tag}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
+        {/* Message banner */}
         {profile.scanMessage?.trim() ? (
-          <p className="mt-4 max-w-sm rounded-xl border border-card-line bg-paper/60 px-3 py-2 text-sm leading-relaxed text-card-fg">
-            {profile.scanMessage.trim()}
-          </p>
+          <div className="mt-4 flex items-center gap-2 rounded-xl border border-card-line bg-paper/60 px-3 py-2.5 text-sm text-card-fg">
+            <WhatsAppIcon />
+            <span className="leading-relaxed">{profile.scanMessage.trim()}</span>
+          </div>
         ) : null}
       </div>
 
@@ -219,21 +243,6 @@ export function CallingCard({ profile }: { profile: Profile }) {
           <Row icon={<MapPin className="size-5" />} label="Base" value={profile.location} />
         ) : null}
       </ul>
-
-      {profile.focus.length > 0 ? (
-        <ul className="flex flex-wrap gap-2 px-6 pb-6 sm:px-7 sm:pb-7">
-          {profile.focus.map((tag) => (
-            <li
-              key={tag}
-              className="rounded-full border border-card-line px-2.5 py-1 text-xs tracking-wide text-card-mute uppercase"
-            >
-              {tag}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <div className="h-2" />
-      )}
     </article>
   );
 }
