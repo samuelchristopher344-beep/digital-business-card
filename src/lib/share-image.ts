@@ -45,7 +45,6 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
   const hasShowcase = loaded.length > 0;
 
   const w = 1080;
-  // Taller when gallery is present so images + contacts + QR all fit
   const h = hasShowcase ? 1920 : 1480;
   const canvas = document.createElement("canvas");
   canvas.width = w;
@@ -67,13 +66,14 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
   ctx.fillStyle = t.accent;
   ctx.fillRect(0, 0, w, 12);
 
-  // Initials circle
-  ctx.fillStyle = t.accent;
+  // Initials circle — accent ring (matches live card monogram)
+  ctx.strokeStyle = t.accent;
+  ctx.lineWidth = 5;
   ctx.beginPath();
-  ctx.arc(140, 160, 56, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = t.bg;
-  ctx.font = "600 36px system-ui, sans-serif";
+  ctx.arc(140, 160, 52, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.fillStyle = t.accent;
+  ctx.font = "600 34px system-ui, sans-serif";
   ctx.textAlign = "center";
   const initials = (profile.fullName || "?")
     .trim()
@@ -108,7 +108,6 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
     y += 80;
   }
 
-  // —— Showcase gallery strip ——
   if (hasShowcase) {
     ctx.strokeStyle = t.mute;
     ctx.globalAlpha = 0.3;
@@ -130,7 +129,6 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
     const thumbH = Math.floor(thumbW * (4 / 3));
     let x = 80;
     for (const { img, label } of loaded) {
-      // Clip rounded rect and draw cover-fit
       ctx.save();
       roundRect(ctx, x, y, thumbW, thumbH, 18);
       ctx.clip();
@@ -142,14 +140,12 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
       ctx.drawImage(img, dx, dy, dw, dh);
       ctx.restore();
 
-      // Subtle border
       ctx.strokeStyle = t.mute;
       ctx.globalAlpha = 0.35;
       roundRect(ctx, x, y, thumbW, thumbH, 18);
       ctx.stroke();
       ctx.globalAlpha = 1;
 
-      // Caption under thumb
       ctx.fillStyle = t.mute;
       ctx.font = "400 16px system-ui, sans-serif";
       const cap = label.length > 22 ? label.slice(0, 20) + "…" : label;
@@ -169,7 +165,6 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
     y += 48;
   }
 
-  // Contact rows
   const contactBottomLimit = h - 480;
   const phone = formatPhoneDisplay(profile) || getFullPhone(profile);
   const rows: [string, string][] = [];
@@ -194,7 +189,6 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
     y += 64;
   }
 
-  // Large QR near bottom
   const link = typeof window !== "undefined" ? publicCardUrl(profile) : "";
   const qrValue = link || "https://calling-card.app";
 
