@@ -51,6 +51,47 @@ function typeLabel(cardType: string): string {
   return map[cardType] || "Card";
 }
 
+/** Draw a small brand-colored icon circle for contact rows */
+function drawContactIcon(ctx: CanvasRenderingContext2D, x: number, y: number, kind: string) {
+  const size = 28;
+  const cx = x + size / 2;
+  const cy = y - 8;
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, size / 2, 0, Math.PI * 2);
+  switch (kind) {
+    case "WHATSAPP":
+      ctx.fillStyle = "#25D366";
+      break;
+    case "TELEGRAM":
+      ctx.fillStyle = "#26A5E4";
+      break;
+    case "INSTAGRAM":
+      ctx.fillStyle = "#E4405F";
+      break;
+    case "X":
+    case "TWITTER":
+      ctx.fillStyle = "#000000";
+      break;
+    case "EMAIL":
+      ctx.fillStyle = "#c6a36e";
+      break;
+    case "PHONE":
+      ctx.fillStyle = "#c6a36e";
+      break;
+    default:
+      ctx.fillStyle = "#888";
+  }
+  ctx.fill();
+  ctx.fillStyle = "#fff";
+  ctx.font = "bold 14px system-ui, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  const letter = kind === "WHATSAPP" ? "W" : kind === "TELEGRAM" ? "T" : kind === "INSTAGRAM" ? "I" : kind === "X" ? "X" : kind[0];
+  ctx.fillText(letter, cx, cy);
+  ctx.restore();
+}
+
 /** Balanced share image: tight header, showcase grid, contact rows, fixed QR zone. */
 export async function renderCardImage(profile: Profile): Promise<Blob> {
   const showcase = profile.showcase ?? [];
@@ -60,14 +101,13 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
   const hasScan = Boolean(profile.scanMessage?.trim());
 
   const w = 1080;
-  // Dynamic height so sections don't float or crush each other
-  let contentH = 420; // header + name block
+  let contentH = 420;
   if (profile.role) contentH += 44;
   if (profile.tagline) contentH += 70;
   if (hasFocus) contentH += 56;
   if (hasScan) contentH += 64;
-  contentH += 36; // divider
-  if (hasShowcase) contentH += 40 + 220 + 48; // label + thumbs + captions
+  contentH += 36;
+  if (hasShowcase) contentH += 40 + 220 + 48;
   const contactCount = [
     profile.email,
     getFullPhone(profile),
@@ -103,7 +143,7 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
   ctx.fillStyle = t.accent;
   ctx.fillRect(0, 0, w, 10);
 
-  // —— Header: monogram + org + type badge ——
+  // Header
   const monogramY = 118;
   ctx.strokeStyle = t.accent;
   ctx.lineWidth = 4;
@@ -128,7 +168,6 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
   ctx.font = "500 22px system-ui, sans-serif";
   ctx.fillText(org, pad + 108, monogramY + 8);
 
-  // Type badge (top right)
   const badge = typeLabel(profile.cardType || "personal");
   ctx.font = "500 20px system-ui, sans-serif";
   const badgeW = ctx.measureText(badge).width + 36;
@@ -143,7 +182,6 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
   ctx.fillText(badge, badgeX + badgeW / 2, badgeY + 29);
   ctx.textAlign = "left";
 
-  // —— Name ——
   let y = 220;
   ctx.fillStyle = t.fg;
   ctx.font = "600 58px Georgia, 'Times New Roman', serif";
@@ -162,7 +200,6 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
     y = wrapText(ctx, profile.tagline.slice(0, 120), pad, y, w - pad * 2, 34) + 16;
   }
 
-  // Focus chips
   if (hasFocus) {
     let cx = pad;
     const cy = y;
@@ -183,7 +220,6 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
     y += 52;
   }
 
-  // Scan message banner
   if (hasScan) {
     const msg = profile.scanMessage!.trim().slice(0, 90);
     ctx.font = "400 22px system-ui, sans-serif";
@@ -201,7 +237,6 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
     y += 64;
   }
 
-  // Divider
   y += 8;
   ctx.strokeStyle = t.mute;
   ctx.globalAlpha = 0.25;
@@ -213,7 +248,6 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
   ctx.globalAlpha = 1;
   y += 32;
 
-  // —— Showcase ——
   if (hasShowcase) {
     ctx.fillStyle = t.accent;
     ctx.beginPath();
@@ -255,13 +289,15 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
     y += thumbH + 52;
   }
 
-  // —— Contacts (label left, value right-aligned column) ——
+  // Contacts with icons
   const phone = formatPhoneDisplay(profile) || getFullPhone(profile);
   const rows: [string, string][] = [];
   if (profile.email) rows.push(["EMAIL", profile.email]);
   if (phone) rows.push(["PHONE", phone]);
   if (profile.whatsapp) rows.push(["WHATSAPP", profile.whatsapp]);
   if (profile.telegram) rows.push(["TELEGRAM", profile.telegram.replace(/^@/, "")]);
+  if (profile.instagram) rows.push(["INSTAGRAM", profile.instagram.replace(/^@/, "")]);
+  if (profile.x) rows.push(["X", profile.x.replace(/^@/, "")]);
   if (profile.website) {
     let web = profile.website.replace(/^https?:\/\//i, "").replace(/\/$/, "");
     if (web.length > 40) web = web.slice(0, 38) + "…";
@@ -269,24 +305,26 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
   }
   if (profile.location) rows.push(["BASE", profile.location]);
   if (profile.linkedin) rows.push(["LINKEDIN", profile.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\//i, "")]);
-  if (profile.instagram) rows.push(["INSTAGRAM", profile.instagram.replace(/^@/, "")]);
 
-  const labelX = pad;
-  const valueX = pad + 200;
+  const iconX = pad;
+  const labelX = pad + 44;
+  const valueX = pad + 220;
   const contactLimit = h - qrZone - 20;
 
   for (const [label, value] of rows.slice(0, 7)) {
     if (y + 44 > contactLimit) break;
+    drawContactIcon(ctx, iconX, y, label);
     ctx.fillStyle = t.accent;
     ctx.font = "600 16px system-ui, sans-serif";
+    ctx.textAlign = "left";
     ctx.fillText(label, labelX, y);
     ctx.fillStyle = t.fg;
     ctx.font = "400 24px system-ui, sans-serif";
-    ctx.fillText(value.slice(0, 42), valueX, y);
+    ctx.fillText(value.slice(0, 38), valueX, y);
     y += 48;
   }
 
-  // —— QR zone (anchored to bottom) ——
+  // QR
   const link = typeof window !== "undefined" ? publicCardUrl(profile) : "";
   const qrValue = link || "https://calling-card.app";
   const slug = slugify(profile.username || profile.fullName) || "card";
@@ -351,7 +389,6 @@ function roundRect(
   ctx.closePath();
 }
 
-/** Returns the Y position after the last line drawn. */
 function wrapText(
   ctx: CanvasRenderingContext2D,
   text: string,
