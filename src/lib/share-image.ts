@@ -1,26 +1,58 @@
 import { toDataURL } from "qrcode";
-import { publicCardUrl, formatPhoneDisplay, getFullPhone, type Profile } from "./profile";
+import {
+  publicCardUrl,
+  formatPhoneDisplay,
+  getFullPhone,
+  type Profile,
+} from "./profile";
+import { showcaseImageUrl, type ShowcaseItem } from "./showcase";
 
-function loadImage(src: string): Promise<HTMLImageElement> {
+function loadImage(src: string, crossOrigin = false): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
+    if (crossOrigin) img.crossOrigin = "anonymous";
     img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error("Could not load QR image"));
+    img.onerror = () => reject(new Error("Could not load image"));
     img.src = src;
   });
 }
 
-/** Draw a clear, shareable card image that looks like the real card + QR code. */
+async function loadShowcaseImages(
+  items: ShowcaseItem[],
+  cardType: Profile["cardType"],
+): Promise<{ img: HTMLImageElement; label: string }[]> {
+  const out: { img: HTMLImageElement; label: string }[] = [];
+  for (const item of items.slice(0, 4)) {
+    const src =
+      item.photoUrl ||
+      showcaseImageUrl(item.text, cardType, item.style ?? "auto");
+    if (!src) continue;
+    try {
+      const needsCors = src.startsWith("http");
+      const img = await loadImage(src, needsCors);
+      out.push({ img, label: item.text });
+    } catch {
+      // Skip failed external/generated images; keep sharing reliable
+    }
+  }
+  return out;
+}
+
+/** Draw a clear, shareable card image that looks like the real card + QR + showcase. */
 export async function renderCardImage(profile: Profile): Promise<Blob> {
+  const showcase = profile.showcase ?? [];
+  const loaded = await loadShowcaseImages(showcase, profile.cardType || "personal");
+  const hasShowcase = loaded.length > 0;
+
   const w = 1080;
-  const h = 1480; // slightly taller so large QR has room without covering details
+  // Taller when gallery is present so images + contacts + QR all fit
+  const h = hasShowcase ? 1920 : 1480;
   const canvas = document.createElement("canvas");
   canvas.width = w;
   canvas.height = h;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas not available");
 
-  // Theme colors
   const themes: Record<string, { bg: string; fg: string; mute: string; accent: string }> = {
     brass: { bg: "#1c1915", fg: "#f6f1e8", mute: "#d2c8bc", accent: "#c6a36e" },
     signal: { bg: "#12181f", fg: "#e8f0f5", mute: "#b7c6ce", accent: "#7dbeb8" },
@@ -29,11 +61,9 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
   };
   const t = themes[profile.theme] || themes.brass;
 
-  // Background
   ctx.fillStyle = t.bg;
   ctx.fillRect(0, 0, w, h);
 
-  // Accent top bar
   ctx.fillStyle = t.accent;
   ctx.fillRect(0, 0, w, 12);
 
@@ -55,42 +85,92 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
   ctx.fillText(initials, 140, 172);
   ctx.textAlign = "left";
 
-  // Org / type
   ctx.fillStyle = t.mute;
   ctx.font = "500 22px system-ui, sans-serif";
   ctx.fillText((profile.organization || profile.cardType || "Calling Card").slice(0, 36), 220, 150);
 
-  // Name
   ctx.fillStyle = t.fg;
   ctx.font = "600 64px Georgia, serif";
   wrapText(ctx, (profile.fullName || "Your name").slice(0, 40), 80, 320, w - 160, 76);
 
-  // Role
+  let y = 480;
   if (profile.role) {
     ctx.fillStyle = t.accent;
     ctx.font = "500 30px system-ui, sans-serif";
-    ctx.fillText(profile.role.slice(0, 50), 80, 480);
+    ctx.fillText(profile.role.slice(0, 50), 80, y);
+    y += 48;
   }
 
-  // Tagline
   if (profile.tagline) {
     ctx.fillStyle = t.mute;
     ctx.font = "400 26px system-ui, sans-serif";
-    wrapText(ctx, profile.tagline.slice(0, 140), 80, 540, w - 160, 36);
+    wrapText(ctx, profile.tagline.slice(0, 140), 80, y, w - 160, 36);
+    y += 80;
   }
 
-  // Divider
-  ctx.strokeStyle = t.mute;
-  ctx.globalAlpha = 0.3;
-  ctx.beginPath();
-  ctx.moveTo(80, 640);
-  ctx.lineTo(w - 80, 640);
-  ctx.stroke();
-  ctx.globalAlpha = 1;
+  // —— Showcase gallery strip ——
+  if (hasShowcase) {
+    ctx.strokeStyle = t.mute;
+    ctx.globalAlpha = 0.3;
+    ctx.beginPath();
+    ctx.moveTo(80, y);
+    ctx.lineTo(w - 80, y);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    y += 36;
 
-  // Contact rows — stop well above the QR zone
-  let y = 700;
-  const contactBottomLimit = 980; // QR starts below this
+    ctx.fillStyle = t.mute;
+    ctx.font = "500 18px system-ui, sans-serif";
+    ctx.fillText("SHOWCASE", 80, y);
+    y += 28;
+
+    const gap = 20;
+    const count = loaded.length;
+    const thumbW = Math.min(220, Math.floor((w - 160 - gap * (count - 1)) / count));
+    const thumbH = Math.floor(thumbW * (4 / 3));
+    let x = 80;
+    for (const { img, label } of loaded) {
+      // Clip rounded rect and draw cover-fit
+      ctx.save();
+      roundRect(ctx, x, y, thumbW, thumbH, 18);
+      ctx.clip();
+      const scale = Math.max(thumbW / img.width, thumbH / img.height);
+      const dw = img.width * scale;
+      const dh = img.height * scale;
+      const dx = x + (thumbW - dw) / 2;
+      const dy = y + (thumbH - dh) / 2;
+      ctx.drawImage(img, dx, dy, dw, dh);
+      ctx.restore();
+
+      // Subtle border
+      ctx.strokeStyle = t.mute;
+      ctx.globalAlpha = 0.35;
+      roundRect(ctx, x, y, thumbW, thumbH, 18);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Caption under thumb
+      ctx.fillStyle = t.mute;
+      ctx.font = "400 16px system-ui, sans-serif";
+      const cap = label.length > 22 ? label.slice(0, 20) + "…" : label;
+      ctx.fillText(cap, x, y + thumbH + 22);
+
+      x += thumbW + gap;
+    }
+    y += thumbH + 48;
+  } else {
+    ctx.strokeStyle = t.mute;
+    ctx.globalAlpha = 0.3;
+    ctx.beginPath();
+    ctx.moveTo(80, y);
+    ctx.lineTo(w - 80, y);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    y += 48;
+  }
+
+  // Contact rows
+  const contactBottomLimit = h - 480;
   const phone = formatPhoneDisplay(profile) || getFullPhone(profile);
   const rows: [string, string][] = [];
   if (profile.email) rows.push(["Email", profile.email]);
@@ -114,50 +194,41 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
     y += 64;
   }
 
-  // —— Large QR code, low on the card (scannable, clear of details) ——
+  // Large QR near bottom
   const link = typeof window !== "undefined" ? publicCardUrl(profile) : "";
   const qrValue = link || "https://calling-card.app";
 
   try {
-    // Generate high-res QR (400px source) then draw large on canvas
     const qrDataUrl = await toDataURL(qrValue, {
       margin: 2,
       width: 400,
       errorCorrectionLevel: "M",
-      color: {
-        dark: "#111111",
-        light: "#ffffff",
-      },
+      color: { dark: "#111111", light: "#ffffff" },
     });
     const qrImg = await loadImage(qrDataUrl);
 
-    const qrSize = 360; // large enough to scan easily from a phone photo
-    const pad = 28;
+    const qrSize = 320;
+    const pad = 24;
     const qrX = (w - qrSize) / 2;
-    // Sit near the bottom with room for the label
     const qrY = h - qrSize - pad * 2 - 56;
 
-    // White rounded plate so QR stays high-contrast on every theme
     ctx.fillStyle = "#ffffff";
     roundRect(ctx, qrX - pad, qrY - pad, qrSize + pad * 2, qrSize + pad * 2, 28);
     ctx.fill();
 
     ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
 
-    // Label under QR only — no long URL over the code
     ctx.fillStyle = t.mute;
     ctx.font = "500 22px system-ui, sans-serif";
     ctx.textAlign = "center";
     ctx.fillText("Scan to open card", w / 2, qrY + qrSize + pad + 34);
     ctx.textAlign = "left";
   } catch {
-    // Fallback: short link text at the very bottom if QR fails
     ctx.fillStyle = t.mute;
     ctx.font = "400 20px system-ui, sans-serif";
     ctx.fillText((link || "calling card").slice(0, 70), 80, h - 40);
   }
 
-  // Export as JPEG — smaller file, better mobile gallery support
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (b) => (b ? resolve(b) : reject(new Error("Could not export image"))),
@@ -208,7 +279,6 @@ function wrapText(
   if (line) ctx.fillText(line, x, yy);
 }
 
-/** Force download that works better on mobile browsers. */
 export async function downloadCardImage(profile: Profile) {
   const blob = await renderCardImage(profile);
   const filename = `${(profile.fullName || "calling-card").replace(/\s+/g, "-").toLowerCase()}.jpg`;
@@ -224,7 +294,7 @@ export async function downloadCardImage(profile: Profile) {
       await writable.close();
       return;
     } catch {
-      // user cancelled or not supported — fall through
+      // cancelled
     }
   }
 
@@ -255,7 +325,9 @@ function canNativeShareFiles(file: File): boolean {
   }
 }
 
-export async function shareCardImage(profile: Profile): Promise<"shared" | "downloaded" | "aborted" | "unsupported"> {
+export async function shareCardImage(
+  profile: Profile,
+): Promise<"shared" | "downloaded" | "aborted" | "unsupported"> {
   const blob = await renderCardImage(profile);
   const file = new File([blob], "calling-card.jpg", { type: "image/jpeg" });
   const nav = navigator as Navigator & {
