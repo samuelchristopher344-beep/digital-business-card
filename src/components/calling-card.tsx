@@ -100,6 +100,21 @@ function XIcon() {
   );
 }
 
+/** Circular accent-ring monogram from the user's name (all card types). */
+function InitialsAvatar({ name }: { name: string }) {
+  const letters = initials(name);
+  return (
+    <div
+      className="grid size-12 shrink-0 place-items-center rounded-full border-2 border-accent text-accent"
+      aria-hidden="true"
+    >
+      <span className="font-display text-[15px] leading-none font-semibold tracking-wide">
+        {letters}
+      </span>
+    </div>
+  );
+}
+
 function ShowcaseStrip({ profile }: { profile: Profile }) {
   const items = profile.showcase ?? [];
   if (items.length === 0) return null;
@@ -146,21 +161,18 @@ export function CallingCard({ profile }: { profile: Profile }) {
   const typeLabel = CARD_TYPES.find((t) => t.id === profile.cardType)?.label || "Personal";
   const hasShowcase = (profile.showcase ?? []).length > 0;
   const nameClass = nameSizeClass(profile.cardType || "personal", hasShowcase);
+  const orgLine = profile.organization.trim() || typeLabel;
 
   return (
     <article className="card-rise overflow-hidden rounded-card bg-card text-card-fg shadow-card">
-      <div className="flex items-start justify-between gap-4 px-6 pt-6 sm:px-7 sm:pt-7">
-        <div className="grid size-12 shrink-0 place-items-center rounded-lg bg-accent text-ink">
-          <span className="font-display text-lg leading-none">{initials(profile.fullName)}</span>
-        </div>
-        <div className="text-right">
-          <p className="text-xs leading-relaxed tracking-widest text-card-mute uppercase">
-            {profile.organization.trim() || typeLabel}
-          </p>
+      <div className="flex items-center gap-3 px-6 pt-6 sm:px-7 sm:pt-7">
+        <InitialsAvatar name={profile.fullName} />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium tracking-wide text-card-mute">{orgLine}</p>
         </div>
       </div>
 
-      <div className="px-6 pt-6 sm:px-7 sm:pt-7">
+      <div className="px-6 pt-5 sm:px-7 sm:pt-6">
         <h1 className={nameClass}>{name}</h1>
         {profile.role ? <p className="mt-2 text-sm tracking-wide text-accent">{profile.role}</p> : null}
         {profile.tagline ? (
