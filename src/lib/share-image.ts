@@ -51,44 +51,63 @@ function typeLabel(cardType: string): string {
   return map[cardType] || "Card";
 }
 
-/** Draw a small brand-colored icon circle for contact rows */
+/** Draw original brand icons using SVG path data via Path2D */
 function drawContactIcon(ctx: CanvasRenderingContext2D, x: number, y: number, kind: string) {
-  const size = 28;
-  const cx = x + size / 2;
-  const cy = y - 8;
+  const size = 26;
+  const scale = size / 24;
   ctx.save();
-  ctx.beginPath();
-  ctx.arc(cx, cy, size / 2, 0, Math.PI * 2);
-  switch (kind) {
-    case "WHATSAPP":
-      ctx.fillStyle = "#25D366";
-      break;
-    case "TELEGRAM":
-      ctx.fillStyle = "#26A5E4";
-      break;
-    case "INSTAGRAM":
-      ctx.fillStyle = "#E4405F";
-      break;
-    case "X":
-    case "TWITTER":
-      ctx.fillStyle = "#000000";
-      break;
-    case "EMAIL":
-      ctx.fillStyle = "#c6a36e";
-      break;
-    case "PHONE":
-      ctx.fillStyle = "#c6a36e";
-      break;
-    default:
-      ctx.fillStyle = "#888";
+  ctx.translate(x, y - 18);
+  ctx.scale(scale, scale);
+
+  if (kind === "WHATSAPP") {
+    ctx.fillStyle = "#25D366";
+    const p1 = new Path2D("M17.5 14.4c-.3-.2-1.7-.8-2-.9-.3-.1-.5-.1-.7.2-.2.3-.8.9-1 1.1-.2.2-.4.2-.7.1-.3-.1-1.2-.4-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.4.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.7-1.7-.9-2.3-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.7.3-.2.2-.9.9-.9 2.1 0 1.2.9 2.4 1 2.5.1.2 1.8 2.8 4.4 3.9 2.6 1.1 2.6.7 3.1.7.5 0 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2-.1-.1-.3-.2-.6-.3z");
+    const p2 = new Path2D("M12 2C6.5 2 2 6.5 2 12c0 1.9.5 3.6 1.4 5.1L2 22l5-1.3c1.5.8 3.1 1.3 5 1.3 5.5 0 10-4.5 10-10S17.5 2 12 2zm0 18c-1.6 0-3.1-.4-4.4-1.2l-.3-.2-3 .8.8-2.9-.2-.3C4.4 15.1 4 13.6 4 12c0-4.4 3.6-8 8-8s8 3.6 8 8-3.6 8-8 8z");
+    ctx.fill(p1);
+    ctx.fill(p2);
+  } else if (kind === "TELEGRAM") {
+    ctx.fillStyle = "#26A5E4";
+    const p = new Path2D("M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.6 6.5l-1.7 8c-.1.6-.5.7-1 .4l-2.8-2.1-1.4 1.3c-.1.1-.3.2-.5.2l.2-2.8 5.1-4.6c.2-.2 0-.3-.3-.1l-6.3 4-2.7-.8c-.6-.2-.6-.6.1-.9l10.5-4c.5-.2.9.1.8.9z");
+    ctx.fill(p);
+  } else if (kind === "INSTAGRAM") {
+    ctx.fillStyle = "#E4405F";
+    const p1 = new Path2D("M12 2.2c2.7 0 3 0 4.1.1 1 .1 1.5.2 1.9.4.5.2.8.4 1.2.8.4.4.6.7.8 1.2.2.4.3.9.4 1.9.1 1.1.1 1.4.1 4.1s0 3-.1 4.1c-.1 1-.2 1.5-.4 1.9-.2.5-.4.8-.8 1.2-.4.4-.7.6-1.2.8-.4.2-.9.3-1.9.4-1.1.1-1.4.1-4.1.1s-3 0-4.1-.1c-1-.1-1.5-.2-1.9-.4-.5-.2-.8-.4-1.2-.8-.4-.4-.6-.7-.8-1.2-.2-.4-.3-.9-.4-1.9-.1-1.1-.1-1.4-.1-4.1s0-3 .1-4.1c.1-1 .2-1.5.4-1.9.2-.5.4-.8.8-1.2.4-.4.7-.6 1.2-.8.4-.2.9-.3 1.9-.4 1.1-.1 1.4-.1 4.1-.1zM12 4c-2.6 0-2.9 0-4 .1-.9.1-1.4.2-1.7.3-.4.2-.7.4-.9.7-.3.2-.5.5-.7.9-.1.3-.2.8-.3 1.7-.1 1.1-.1 1.4-.1 4s0 2.9.1 4c.1.9.2 1.4.3 1.7.2.4.4.7.7.9.2.3.5.5.9.7.3.1.8.2 1.7.3 1.1.1 1.4.1 4 .1s2.9 0 4-.1c.9-.1 1.4-.2 1.7-.3.4-.2.7-.4.9-.7.3-.2.5-.5.7-.9.1-.3.2-.8.3-1.7.1-1.1.1-1.4.1-4s0-2.9-.1-4c-.1-.9-.2-1.4-.3-1.7-.2-.4-.4-.7-.7-.9-.2-.3-.5-.5-.9-.7-.3-.1-.8-.2-1.7-.3-1.1-.1-1.4-.1-4-.1z");
+    const p2 = new Path2D("M12 7.4c-2.5 0-4.6 2.1-4.6 4.6s2.1 4.6 4.6 4.6 4.6-2.1 4.6-4.6-2.1-4.6-4.6-4.6zm0 7.6c-1.7 0-3-1.3-3-3s1.3-3 3-3 3 1.3 3 3-1.3 3-3 3z");
+    ctx.fill(p1);
+    ctx.fill(p2);
+    ctx.beginPath();
+    ctx.arc(17.3, 6.7, 1.1, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (kind === "X" || kind === "TWITTER") {
+    ctx.fillStyle = "#ffffff";
+    const p = new Path2D("M18.2 2.2h3.3l-7.2 8.2 8.5 11.2h-6.7l-5.2-6.8-6 6.8H1.6l7.7-8.8L1.1 2.2h6.9l4.7 6.2 5.5-6.2zm-1.2 17.4h1.8L7.1 4h-2L17 19.6z");
+    ctx.fill(p);
+  } else if (kind === "EMAIL") {
+    ctx.fillStyle = "#c6a36e";
+    ctx.beginPath();
+    ctx.roundRect(2, 4, 20, 16, 2);
+    ctx.fill();
+    ctx.strokeStyle = "#1c1915";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(3, 6);
+    ctx.lineTo(12, 13);
+    ctx.lineTo(21, 6);
+    ctx.stroke();
+  } else if (kind === "PHONE") {
+    ctx.fillStyle = "#c6a36e";
+    ctx.beginPath();
+    ctx.roundRect(7, 2, 10, 20, 2);
+    ctx.fill();
+    ctx.fillStyle = "#1c1915";
+    ctx.fillRect(10, 18, 4, 2);
+  } else {
+    ctx.fillStyle = "#888";
+    ctx.beginPath();
+    ctx.arc(12, 12, 10, 0, Math.PI * 2);
+    ctx.fill();
   }
-  ctx.fill();
-  ctx.fillStyle = "#fff";
-  ctx.font = "bold 14px system-ui, sans-serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  const letter = kind === "WHATSAPP" ? "W" : kind === "TELEGRAM" ? "T" : kind === "INSTAGRAM" ? "I" : kind === "X" ? "X" : kind[0];
-  ctx.fillText(letter, cx, cy);
+
   ctx.restore();
 }
 
@@ -289,7 +308,7 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
     y += thumbH + 52;
   }
 
-  // Contacts with icons
+  // Contacts with original icons
   const phone = formatPhoneDisplay(profile) || getFullPhone(profile);
   const rows: [string, string][] = [];
   if (profile.email) rows.push(["EMAIL", profile.email]);
@@ -307,8 +326,8 @@ export async function renderCardImage(profile: Profile): Promise<Blob> {
   if (profile.linkedin) rows.push(["LINKEDIN", profile.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\//i, "")]);
 
   const iconX = pad;
-  const labelX = pad + 44;
-  const valueX = pad + 220;
+  const labelX = pad + 40;
+  const valueX = pad + 210;
   const contactLimit = h - qrZone - 20;
 
   for (const [label, value] of rows.slice(0, 7)) {
