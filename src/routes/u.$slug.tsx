@@ -245,100 +245,37 @@ function PublicCardPage() {
               </div>
               <div className="flex flex-col gap-3">
                 <div className="grid grid-cols-2 rounded-xl bg-paper p-1">
-                  <button
-                    type="button"
-                    aria-pressed={qrMode === "card"}
-                    onClick={() => setQrMode("card")}
-                    className={
-                      "h-10 rounded-lg text-sm font-medium " +
-                      (qrMode === "card" ? "bg-ink text-cream" : "text-mute")
-                    }
-                  >
+                  <button type="button" aria-pressed={qrMode === "card"} onClick={() => setQrMode("card")} className={"h-10 rounded-lg text-sm font-medium " + (qrMode === "card" ? "bg-ink text-cream" : "text-mute")}>
                     Open card
                   </button>
-                  <button
-                    type="button"
-                    aria-pressed={qrMode === "contact"}
-                    onClick={() => setQrMode("contact")}
-                    className={
-                      "h-10 rounded-lg text-sm font-medium " +
-                      (qrMode === "contact" ? "bg-ink text-cream" : "text-mute")
-                    }
-                  >
+                  <button type="button" aria-pressed={qrMode === "contact"} onClick={() => setQrMode("contact")} className={"h-10 rounded-lg text-sm font-medium " + (qrMode === "contact" ? "bg-ink text-cream" : "text-mute")}>
                     Save contact
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={saveOnPhone}
-                    className="inline-flex h-10 items-center gap-2 rounded-xl bg-ink px-3 text-sm font-medium text-cream"
-                  >
+                  <button type="button" onClick={saveOnPhone} className="inline-flex h-10 items-center gap-2 rounded-xl bg-ink px-3 text-sm font-medium text-cream">
                     <Smartphone className="size-4" /> Save on phone
                   </button>
-                  <button
-                    type="button"
-                    onClick={saveContactFile}
-                    className="inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-paper px-3 text-sm font-medium"
-                  >
+                  <button type="button" onClick={saveContactFile} className="inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-paper px-3 text-sm font-medium">
                     <Download className="size-4" /> Download .vcf
                   </button>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      try {
-                        await downloadCardImage(profile!);
-                        setNotice("Card image saved — check Downloads or Gallery");
-                      } catch {
-                        setNotice("Could not save image");
-                      }
-                    }}
-                    className="inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-paper px-3 text-sm font-medium"
-                  >
+                  <button type="button" onClick={async () => { try { await downloadCardImage(profile!); setNotice("Card image saved — check Downloads or Gallery"); } catch { setNotice("Could not save image"); } }} className="inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-paper px-3 text-sm font-medium">
                     <Image className="size-4" /> Download card image
                   </button>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      try {
-                        const r = await shareCardImage(profile!);
-                        if (r === "shared") setNotice("Image shared — perfect for WhatsApp");
-                        else if (r === "aborted") return;
-                        else {
-                          await downloadCardImage(profile!);
-                          setNotice("Image saved — attach it in WhatsApp");
-                        }
-                      } catch {
-                        setNotice("Could not share image");
-                      }
-                    }}
-                    className="inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-paper px-3 text-sm font-medium"
-                  >
+                  <button type="button" onClick={async () => { try { const r = await shareCardImage(profile!); if (r === "shared") setNotice("Image shared — perfect for WhatsApp"); else if (r === "aborted") return; else { await downloadCardImage(profile!); setNotice("Image saved — attach it in WhatsApp"); } } catch { setNotice("Could not share image"); } }} className="inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-paper px-3 text-sm font-medium">
                     <Share2 className="size-4" /> Share as image
                   </button>
-                  <button
-                    type="button"
-                    onClick={copyLink}
-                    className="inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-paper px-3 text-sm font-medium"
-                  >
+                  <button type="button" onClick={copyLink} className="inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-paper px-3 text-sm font-medium">
                     <Copy className="size-4" /> Copy link
                   </button>
-                  <button
-                    type="button"
-                    onClick={shareCard}
-                    className="inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-paper px-3 text-sm font-medium"
-                  >
+                  <button type="button" onClick={shareCard} className="inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-paper px-3 text-sm font-medium">
                     <Share2 className="size-4" /> Share
                   </button>
                 </div>
                 <p className="text-xs leading-relaxed text-mute">{SAVE_PHONE_HELP.both}</p>
                 <p className="text-xs text-mute">{SAVE_PHONE_HELP.apple}</p>
                 <p className="text-xs text-mute">{SAVE_PHONE_HELP.google}</p>
-                {notice ? (
-                  <p className="inline-flex items-center gap-1.5 text-sm text-mute">
-                    <Check className="size-4 text-accent" /> {notice}
-                  </p>
-                ) : null}
+                {notice ? <p className="inline-flex items-center gap-1.5 text-sm text-mute"><Check className="size-4 text-accent" /> {notice}</p> : null}
               </div>
             </div>
           </section>
@@ -346,88 +283,116 @@ function PublicCardPage() {
           <section className="rounded-card border border-line bg-cream p-5">
             <h3 className="text-sm font-semibold">Your private notebook</h3>
             <PrivacyNote className="mt-3" />
-            <button
-              type="button"
-              onClick={() => setShowSavePrivate(true)}
-              className="mt-3 h-10 rounded-xl border border-line bg-paper px-4 text-sm font-medium"
-            >
+            <button type="button" onClick={() => setShowSavePrivate(true)} className="mt-3 h-10 rounded-xl border border-line bg-paper px-4 text-sm font-medium">
               Save to my contacts with tag + note
             </button>
-            <p className="mt-2 text-xs text-mute">
-              Only you see tags and notes. The other person is not notified.
-            </p>
+            <p className="mt-2 text-xs text-mute">Only you see tags and notes. The other person is not notified.</p>
           </section>
 
           <section className="flex flex-wrap gap-3 text-xs text-mute">
-            <button
-              type="button"
-              className="underline-offset-2 hover:underline"
-              onClick={() => {
-                blockKey(slug, profile.fullName || slug, "Blocked from public card");
-                setNotice("Blocked on this device");
-              }}
-            >
-              Block on this device
-            </button>
-            <button
-              type="button"
-              className="inline-flex items-center gap-1 underline-offset-2 hover:underline"
-              onClick={() => setShowReport(true)}
-            >
-              <Flag className="size-3" /> Report
-            </button>
-            <Link to="/privacy" className="underline-offset-2 hover:underline">
-              Privacy
-            </Link>
+            <button type="button" className="underline-offset-2 hover:underline" onClick={() => { blockKey(slug, profile.fullName || slug, "Blocked from public card"); setNotice("Blocked on this device"); }}>Block on this device</button>
+            <button type="button" className="inline-flex items-center gap-1 underline-offset-2 hover:underline" onClick={() => setShowReport(true)}><Flag className="size-3" /> Report</button>
+            <Link to="/privacy" className="underline-offset-2 hover:underline">Privacy</Link>
           </section>
 
-          <p className="text-center text-sm text-mute">
-            Want a card like this?{" "}
-            <Link to="/create" className="font-medium text-ink underline-offset-2 hover:underline">
-              Create yours free
-            </Link>
-          </p>
+          <p className="text-center text-sm text-mute">Want a card like this?{" "}<Link to="/create" className="font-medium text-ink underline-offset-2 hover:underline">Create yours free</Link></p>
         </div>
       </div>
 
-      {showSavePrivate ? (
-        <PrivateSaveModal
-          profile={profile}
-          slug={slug}
-          link={link}
-          onClose={() => setShowSavePrivate(false)}
-          onSaved={() => {
-            setShowSavePrivate(false);
-            setNotice("Saved privately — only you can see it");
-          }}
-        />
-      ) : null}
-
-      {showReport ? (
-        <ReportModal
-          slug={slug}
-          onClose={() => setShowReport(false)}
-          onDone={() => {
-            setShowReport(false);
-            setNotice("Report recorded. Thank you.");
-          }}
-        />
-      ) : null}
-
-      {showShareSheet ? (
-        <PublicShareSheet
-          url={link}
-          shareText={shareText}
-          title={profile.fullName || "Calling Card"}
-          onClose={() => setShowShareSheet(false)}
-          onCopied={() => {
-            recordShare(slug);
-            setNotice("Link copied");
-            setShowShareSheet(false);
-          }}
-          onShared={() => recordShare(slug)}
-        />
-      ) : null}
+      {showSavePrivate ? <PrivateSaveModal profile={profile} slug={slug} link={link} onClose={() => setShowSavePrivate(false)} onSaved={() => { setShowSavePrivate(false); setNotice("Saved privately — only you can see it"); }} /> : null}
+      {showReport ? <ReportModal slug={slug} onClose={() => setShowReport(false)} onDone={() => { setShowReport(false); setNotice("Report recorded. Thank you."); }} /> : null}
+      {showShareSheet ? <PublicShareSheet url={link} shareText={shareText} title={profile.fullName || "Calling Card"} onClose={() => setShowShareSheet(false)} onCopied={() => { recordShare(slug); setNotice("Link copied"); setShowShareSheet(false); }} onShared={() => recordShare(slug)} /> : null}
     </main>
+  );
+}
+
+function PublicShareSheet({ url, shareText, title, onClose, onCopied, onShared }: { url: string; shareText: string; title: string; onClose: () => void; onCopied: () => void; onShared: () => void }) {
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") onClose(); }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  const encodedUrl = encodeURIComponent(url);
+  const encodedText = encodeURIComponent(`${shareText}\n${url}`);
+  const encodedTitle = encodeURIComponent(title);
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center" role="dialog" aria-modal="true" aria-label="Share link" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="w-full max-w-md rounded-2xl border border-line bg-cream p-5 shadow-xl">
+        <div className="flex items-start justify-between gap-3">
+          <div><h2 className="text-lg font-semibold text-ink">Share link</h2><p className="mt-1 text-sm text-mute">Pick where to send this calling card.</p></div>
+          <button type="button" onClick={onClose} className="rounded-lg p-1.5 text-mute hover:bg-paper hover:text-ink" aria-label="Close"><X className="size-5" /></button>
+        </div>
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <a href={`https://wa.me/?text=${encodedText}`} target="_blank" rel="noopener noreferrer" onClick={onShared} className="flex flex-col items-center gap-1.5 rounded-xl border border-ink bg-ink px-3 py-3 text-sm font-medium text-cream hover:opacity-90"><MessageCircle className="size-5" />WhatsApp</a>
+          <a href={`https://t.me/share/url?url=${encodedUrl}&text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer" onClick={onShared} className="flex flex-col items-center gap-1.5 rounded-xl border border-line bg-paper px-3 py-3 text-sm font-medium text-ink hover:bg-cream"><Share2 className="size-5" />Telegram</a>
+          <a href={`https://twitter.com/intent/tweet?text=${encodedText}`} target="_blank" rel="noopener noreferrer" onClick={onShared} className="flex flex-col items-center gap-1.5 rounded-xl border border-line bg-paper px-3 py-3 text-sm font-medium text-ink hover:bg-cream"><Share2 className="size-5" />X / Twitter</a>
+          <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`} target="_blank" rel="noopener noreferrer" onClick={onShared} className="flex flex-col items-center gap-1.5 rounded-xl border border-line bg-paper px-3 py-3 text-sm font-medium text-ink hover:bg-cream"><Share2 className="size-5" />Facebook</a>
+          <a href={`mailto:?subject=${encodedTitle}&body=${encodedText}`} onClick={onShared} className="flex flex-col items-center gap-1.5 rounded-xl border border-line bg-paper px-3 py-3 text-sm font-medium text-ink hover:bg-cream"><Mail className="size-5" />Email</a>
+          <button type="button" onClick={async () => { await navigator.clipboard.writeText(url); onCopied(); }} className="flex flex-col items-center gap-1.5 rounded-xl border border-line bg-paper px-3 py-3 text-sm font-medium text-ink hover:bg-cream"><Copy className="size-5" />Copy link</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PrivateSaveModal({ profile, slug, link, onClose, onSaved }: { profile: Profile; slug: string; link: string; onClose: () => void; onSaved: () => void }) {
+  const [tag, setTag] = useState<ContactTagId>("peer");
+  const [note, setNote] = useState("");
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") onClose(); }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center" role="dialog" aria-modal="true" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="w-full max-w-md rounded-2xl border border-line bg-cream p-5 shadow-xl">
+        <h2 className="text-lg font-semibold text-ink">Save privately</h2>
+        <p className="mt-1 text-sm text-mute">Only on this device. They will not be notified.</p>
+        <label className="mt-3 block text-xs font-medium uppercase text-mute">Tag
+          <select value={tag} onChange={(e) => setTag(e.target.value as ContactTagId)} className="mt-1 h-11 w-full rounded-xl border border-line bg-paper px-3 text-sm">
+            {CONTACT_TAGS.map((t) => (<option key={t.id} value={t.id}>{t.label}</option>))}
+          </select>
+        </label>
+        <label className="mt-3 block text-xs font-medium uppercase text-mute">Private note
+          <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} className="mt-1 w-full rounded-xl border border-line bg-paper px-3 py-2 text-sm" />
+        </label>
+        <div className="mt-4 flex gap-2">
+          <button type="button" onClick={onClose} className="h-10 flex-1 rounded-xl border border-line text-sm">Cancel</button>
+          <button type="button" onClick={() => { upsertPrivateContact({ key: slug, name: profile.fullName || slug, tag, note, link }); onSaved(); }} className="h-10 flex-1 rounded-xl bg-ink text-sm font-medium text-cream">Save</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ReportModal({ slug, onClose, onDone }: { slug: string; onClose: () => void; onDone: () => void }) {
+  const [reason, setReason] = useState("spam");
+  const [details, setDetails] = useState("");
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") onClose(); }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center" role="dialog" aria-modal="true" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="w-full max-w-md rounded-2xl border border-line bg-cream p-5 shadow-xl">
+        <h2 className="text-lg font-semibold text-ink">Report card</h2>
+        <label className="mt-3 block text-xs font-medium uppercase text-mute">Reason
+          <select value={reason} onChange={(e) => setReason(e.target.value)} className="mt-1 h-11 w-full rounded-xl border border-line bg-paper px-3 text-sm">
+            <option value="spam">Spam</option>
+            <option value="harassment">Harassment</option>
+            <option value="impersonation">Impersonation</option>
+            <option value="other">Other</option>
+          </select>
+        </label>
+        <label className="mt-3 block text-xs font-medium uppercase text-mute">Details (optional)
+          <textarea value={details} onChange={(e) => setDetails(e.target.value)} rows={3} className="mt-1 w-full rounded-xl border border-line bg-paper px-3 py-2 text-sm" />
+        </label>
+        <div className="mt-4 flex gap-2">
+          <button type="button" onClick={onClose} className="h-10 flex-1 rounded-xl border border-line text-sm">Cancel</button>
+          <button type="button" onClick={() => { submitReport({ slug, reason, details }); onDone(); }} className="h-10 flex-1 rounded-xl bg-ink text-sm font-medium text-cream">Submit report</button>
+        </div>
+      </div>
+    </div>
   );
 }
