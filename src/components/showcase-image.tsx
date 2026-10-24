@@ -7,7 +7,7 @@ type Props = {
   className?: string;
 };
 
-/** Generated showcase image with loading + retry (external AI URLs can fail). */
+/** Showcase image with loading + retry. */
 export function ShowcaseImage({ src, alt = "", className = "aspect-[3/4] w-full object-cover" }: Props) {
   const [status, setStatus] = useState<"loading" | "ok" | "error">("loading");
   const [attempt, setAttempt] = useState(0);
@@ -19,7 +19,7 @@ export function ShowcaseImage({ src, alt = "", className = "aspect-[3/4] w-full 
   if (status === "error") {
     return (
       <div className="flex aspect-[3/4] w-full flex-col items-center justify-center gap-2 bg-card-line/30 px-2">
-        <p className="text-center text-[10px] text-card-mute">Couldn&apos;t load</p>
+        <p className="text-center text-[10px] text-card-mute">Couldn't load</p>
         <button
           type="button"
           onClick={() => {
@@ -45,6 +45,7 @@ export function ShowcaseImage({ src, alt = "", className = "aspect-[3/4] w-full 
         src={attempt > 0 ? `${src}${src.includes("?") ? "&" : "?"}r=${attempt}` : src}
         alt={alt}
         loading="lazy"
+        referrerPolicy="no-referrer"
         className={className + (status === "loading" ? " opacity-0" : " opacity-100") + " transition-opacity"}
         onLoad={() => setStatus("ok")}
         onError={() => setStatus("error")}
