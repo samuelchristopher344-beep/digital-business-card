@@ -15,7 +15,6 @@ import {
   X,
 } from "lucide-react";
 import { CallingCard } from "@/components/calling-card";
-import { QrMark } from "@/components/qr-mark";
 import { DEMO_PROFILE } from "@/lib/profile";
 
 export const Route = createFileRoute("/")({ component: Landing });
@@ -98,16 +97,8 @@ function Landing() {
                 </Link>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-start">
-                <div className="min-w-0" data-theme="brass">
-                  <CallingCard profile={DEMO_PROFILE} />
-                </div>
-                <div className="flex flex-col items-center gap-2 sm:w-36">
-                  <QrMark value={demoUrl} label="Demo calling card QR" />
-                  <p className="text-center text-[11px] leading-snug text-zinc-500">
-                    Scan to open the demo card
-                  </p>
-                </div>
+              <div className="min-w-0" data-theme="brass">
+                <CallingCard profile={DEMO_PROFILE} qrValue={demoUrl} qrLabel="Demo calling card QR" />
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
