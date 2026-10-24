@@ -33,7 +33,7 @@ function Row({
       <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center" aria-hidden="true">
         {icon}
       </span>
-      <span className="min-w-0">
+      <span className="min-w-0 flex-1">
         <span className="block text-xs whitespace-nowrap tracking-wide text-card-mute uppercase">{label}</span>
         <span className="block truncate text-sm text-card-fg">{value}</span>
       </span>
@@ -41,14 +41,14 @@ function Row({
   );
 
   if (!href) {
-    return <li className="flex items-start gap-3">{body}</li>;
+    return <li className="flex items-center gap-3">{body}</li>;
   }
 
   return (
     <li>
       <a
         href={href}
-        className="flex items-start gap-3 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        className="flex items-center gap-3 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-accent"
         {...(href.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}
       >
         {body}
@@ -100,15 +100,14 @@ function XIcon() {
   );
 }
 
-/** Circular accent-ring monogram from the user's name (all card types). */
 function InitialsAvatar({ name }: { name: string }) {
   const letters = initials(name);
   return (
     <div
-      className="grid size-12 shrink-0 place-items-center rounded-full border-2 border-accent text-accent"
+      className="grid size-14 shrink-0 place-items-center rounded-full border-2 border-accent text-accent"
       aria-hidden="true"
     >
-      <span className="font-display text-[15px] leading-none font-semibold tracking-wide">
+      <span className="font-display text-lg leading-none font-semibold tracking-wide">
         {letters}
       </span>
     </div>
@@ -120,23 +119,23 @@ function ShowcaseStrip({ profile }: { profile: Profile }) {
   if (items.length === 0) return null;
 
   return (
-    <div className="px-6 pb-5 sm:px-7">
+    <div className="px-6 pb-4 sm:px-7">
       <p className="mb-3 flex items-center gap-2 text-xs tracking-widest text-card-mute uppercase">
         <span className="size-2 rounded-full bg-accent" />
         Showcase
       </p>
-      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {items.map((item) => {
+      <ul className="grid grid-cols-3 gap-3">
+        {items.slice(0, 3).map((item) => {
           const src = showcaseImageUrl(item.text, profile.cardType, item.style ?? "auto");
           return (
             <li key={item.id} className="min-w-0">
-              <div className="overflow-hidden rounded-xl border border-card-line bg-paper">
+              <div className="overflow-hidden rounded-xl border border-card-line bg-paper aspect-[4/5]">
                 {item.photoUrl ? (
                   <ShowcaseImage src={item.photoUrl} />
                 ) : src ? (
                   <ShowcaseImage src={src} />
                 ) : (
-                  <div className="aspect-[3/4] w-full bg-card-line/40" />
+                  <div className="h-full w-full bg-card-line/40" />
                 )}
               </div>
               <p className="mt-2 line-clamp-2 text-center text-[11px] leading-snug text-card-mute">{item.text}</p>
@@ -144,9 +143,6 @@ function ShowcaseStrip({ profile }: { profile: Profile }) {
           );
         })}
       </ul>
-      <p className="mt-3 text-[10px] leading-relaxed text-card-mute">
-        Illustrative looks from the owner's description — not photos of real clients.
-      </p>
     </div>
   );
 }
@@ -168,31 +164,29 @@ export function CallingCard({ profile }: { profile: Profile }) {
 
   return (
     <article className="card-rise overflow-hidden rounded-card bg-card text-card-fg shadow-card">
-      {/* Header: avatar + org left, type badge right */}
       <div className="flex items-center justify-between gap-3 px-6 pt-6 sm:px-7 sm:pt-7">
         <div className="flex min-w-0 items-center gap-3">
           <InitialsAvatar name={profile.fullName} />
           <p className="truncate text-sm font-medium tracking-wide text-card-mute">{orgLine}</p>
         </div>
-        <span className="shrink-0 rounded-full border border-accent/40 px-3 py-1 text-xs tracking-wide text-accent">
+        <span className="shrink-0 rounded-full border border-accent/50 px-3.5 py-1 text-xs font-medium tracking-wide text-accent">
           {typeLabel}
         </span>
       </div>
 
-      <div className="px-6 pt-4 sm:px-7 sm:pt-5">
+      <div className="px-6 pt-5 sm:px-7">
         <h1 className={nameClass}>{name}</h1>
-        {profile.role ? <p className="mt-1 text-base font-medium tracking-wide text-accent sm:text-lg">{profile.role}</p> : null}
+        {profile.role ? <p className="mt-1.5 text-lg font-medium tracking-wide text-accent">{profile.role}</p> : null}
         {profile.tagline ? (
-          <p className="mt-2 max-w-sm text-sm leading-relaxed text-card-mute">{profile.tagline}</p>
+          <p className="mt-2 max-w-md text-sm leading-relaxed text-card-mute">{profile.tagline}</p>
         ) : null}
 
-        {/* Focus tags higher, right after intro */}
         {profile.focus.length > 0 ? (
           <ul className="mt-4 flex flex-wrap gap-2">
             {profile.focus.map((tag) => (
               <li
                 key={tag}
-                className="rounded-full border border-card-line bg-paper/40 px-3 py-1 text-xs tracking-wide text-card-mute"
+                className="rounded-full border border-card-line bg-paper/50 px-3 py-1 text-xs tracking-wide text-card-mute"
               >
                 {tag}
               </li>
@@ -200,9 +194,8 @@ export function CallingCard({ profile }: { profile: Profile }) {
           </ul>
         ) : null}
 
-        {/* Message banner */}
         {profile.scanMessage?.trim() ? (
-          <div className="mt-4 flex items-center gap-2 rounded-xl border border-card-line bg-paper/60 px-3 py-2.5 text-sm text-card-fg">
+          <div className="mt-4 flex items-center gap-2.5 rounded-xl border border-card-line bg-paper/70 px-3.5 py-2.5 text-sm text-card-fg">
             <WhatsAppIcon />
             <span className="leading-relaxed">{profile.scanMessage.trim()}</span>
           </div>
@@ -213,7 +206,7 @@ export function CallingCard({ profile }: { profile: Profile }) {
 
       <ShowcaseStrip profile={profile} />
 
-      <ul className="grid gap-3 px-6 py-5 sm:px-7">
+      <ul className="grid gap-3.5 px-6 py-4 sm:px-7">
         {profile.email ? (
           <Row href={`mailto:${profile.email}`} icon={<Mail className="size-5" />} label="Email" value={profile.email} />
         ) : null}
