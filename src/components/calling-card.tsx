@@ -16,6 +16,7 @@ import {
 } from "@/lib/profile";
 import { nameSizeClass, showcaseImageUrl } from "@/lib/showcase";
 import { ShowcaseImage } from "@/components/showcase-image";
+import { QrMark } from "@/components/qr-mark";
 
 function Row({
   href,
@@ -147,7 +148,15 @@ function ShowcaseStrip({ profile }: { profile: Profile }) {
   );
 }
 
-export function CallingCard({ profile }: { profile: Profile }) {
+export function CallingCard({
+  profile,
+  qrValue,
+  qrLabel,
+}: {
+  profile: Profile;
+  qrValue?: string;
+  qrLabel?: string;
+}) {
   const site = hrefForWebsite(profile.website);
   const wa = whatsappHref(profile.whatsapp);
   const tg = telegramHref(profile.telegram);
@@ -236,6 +245,14 @@ export function CallingCard({ profile }: { profile: Profile }) {
           <Row icon={<MapPin className="size-5" />} label="Base" value={profile.location} />
         ) : null}
       </ul>
+
+      {qrValue ? (
+        <div className="flex flex-col items-center gap-2 px-6 pb-6 pt-2 sm:px-7">
+          <QrMark value={qrValue} label={qrLabel || "QR code for this card"} />
+          <p className="text-center text-sm font-medium text-accent">Scan to open full card + gallery</p>
+          <p className="text-center text-xs text-card-mute">/{profile.username || "card"} · calling card</p>
+        </div>
+      ) : null}
     </article>
   );
 }
