@@ -90,9 +90,24 @@ export const DEMO_PROFILE: Profile = {
   note: "Drones, propulsion, marine craft, and future mobility — ideas into prototypes.",
   focus: ["Drones", "Propulsion", "Marine"],
   showcase: [
-    { id: "demo-1", text: "Drone Engineering & Prototyping", style: "workspace" },
-    { id: "demo-2", text: "Marine Craft Concepts", style: "product" },
-    { id: "demo-3", text: "Precision Work & Fabrication", style: "workspace" },
+    {
+      id: "demo-1",
+      text: "Drone Engineering & Prototyping",
+      style: "workspace",
+      photoUrl: "https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=400&h=500&fit=crop&q=80",
+    },
+    {
+      id: "demo-2",
+      text: "Marine Craft Concepts",
+      style: "product",
+      photoUrl: "https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?w=400&h=500&fit=crop&q=80",
+    },
+    {
+      id: "demo-3",
+      text: "Precision Work & Fabrication",
+      style: "workspace",
+      photoUrl: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=400&h=500&fit=crop&q=80",
+    },
   ],
   scanMessage: "WhatsApp me to talk projects",
   theme: "brass",
