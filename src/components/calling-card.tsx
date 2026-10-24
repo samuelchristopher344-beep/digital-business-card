@@ -166,7 +166,7 @@ export function CallingCard({
   const orgLine = profile.organization.trim() || typeLabel;
 
   return (
-    <article className="card-rise overflow-hidden rounded-card bg-card text-card-fg shadow-card">
+    <article className="card-rise mx-auto w-full max-w-[380px] overflow-hidden rounded-card bg-card text-card-fg shadow-card">
       {/* Position 1 — Header */}
       <div className="flex items-center justify-between gap-3 border-b border-card-line/40 px-5 py-4 sm:px-6">
         <div className="flex min-w-0 items-center gap-2.5">
