@@ -42,14 +42,14 @@ function Row({
   );
 
   if (!href) {
-    return <li className="flex items-center gap-3 py-0.5">{body}</li>;
+    return <li className="flex items-center gap-3 py-1">{body}</li>;
   }
 
   return (
     <li>
       <a
         href={href}
-        className="flex items-center gap-3 rounded-lg py-0.5 outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        className="flex items-center gap-3 rounded-lg py-1 outline-none focus-visible:ring-2 focus-visible:ring-accent"
         {...(href.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}
       >
         {body}
@@ -96,7 +96,7 @@ function LinkedInIcon() {
 function XIcon() {
   return (
     <svg viewBox="0 0 24 24" className="size-5" fill="currentColor">
-      <path d="M18.2 2.2h3.3l-7.2 8.2 8.5 11.2h-6.7l-5.2-6.8-6 6.8H1.6l7.7-8.8L1.1 2.2h6.9l4.7 6.2 5.5-6.2zm-1.2 17.4h1.8L7.1 4h-2L17 19.6z" />
+      <path d="M18.2 2.2h3.3l-7.2 8.2 8.5 11.2h-6.7l-5.2-6.8-6 6.8H1.6l7.7-8.8L1.1 2.2h6.9l4.7 6.2 5.5-6.2zm-1.2 17.4h1.8L7 19.6z" />
     </svg>
   );
 }
@@ -105,10 +105,10 @@ function InitialsAvatar({ name }: { name: string }) {
   const letters = initials(name);
   return (
     <div
-      className="grid size-12 shrink-0 place-items-center rounded-full border-2 border-accent text-accent"
+      className="grid size-11 shrink-0 place-items-center rounded-full border-2 border-accent text-accent"
       aria-hidden="true"
     >
-      <span className="font-display text-base leading-none font-semibold tracking-wide">
+      <span className="font-display text-sm leading-none font-semibold tracking-wide">
         {letters}
       </span>
     </div>
@@ -120,24 +120,18 @@ function ShowcaseStrip({ profile }: { profile: Profile }) {
   if (items.length === 0) return null;
 
   return (
-    <div className="px-5 pb-3 sm:px-6">
+    <div className="px-5 pb-4 sm:px-6">
       <p className="mb-2.5 flex items-center gap-2 text-[11px] tracking-widest text-card-mute uppercase">
         <span className="size-1.5 rounded-full bg-accent" />
         Showcase
       </p>
       <ul className="grid grid-cols-3 gap-2.5">
         {items.slice(0, 3).map((item) => {
-          const src = showcaseImageUrl(item.text, profile.cardType, item.style ?? "auto");
+          const src = item.photoUrl || showcaseImageUrl(item.text, profile.cardType, item.style ?? "auto");
           return (
             <li key={item.id} className="min-w-0">
               <div className="overflow-hidden rounded-lg border border-card-line bg-paper aspect-[4/5]">
-                {item.photoUrl ? (
-                  <ShowcaseImage src={item.photoUrl} />
-                ) : src ? (
-                  <ShowcaseImage src={src} />
-                ) : (
-                  <div className="h-full w-full bg-card-line/40" />
-                )}
+                {src ? <ShowcaseImage src={src} /> : <div className="h-full w-full bg-card-line/40" />}
               </div>
               <p className="mt-1.5 line-clamp-2 text-center text-[10px] leading-snug text-card-mute">{item.text}</p>
             </li>
@@ -173,18 +167,18 @@ export function CallingCard({
 
   return (
     <article className="card-rise overflow-hidden rounded-card bg-card text-card-fg shadow-card">
-      {/* 1. Header */}
-      <div className="flex items-center justify-between gap-3 px-5 pt-5 sm:px-6 sm:pt-6">
+      {/* Position 1 — Header: monogram + org + badge */}
+      <div className="flex items-center justify-between gap-3 border-b border-card-line/40 px-5 py-4 sm:px-6">
         <div className="flex min-w-0 items-center gap-2.5">
           <InitialsAvatar name={profile.fullName} />
           <p className="truncate text-sm font-medium tracking-wide text-card-mute">{orgLine}</p>
         </div>
-        <span className="shrink-0 rounded-full border border-accent/60 px-3 py-0.5 text-xs font-medium tracking-wide text-accent">
+        <span className="shrink-0 rounded-full border border-accent/70 px-3 py-1 text-xs font-medium tracking-wide text-accent">
           {typeLabel}
         </span>
       </div>
 
-      {/* 2. Name + role + tagline */}
+      {/* Position 2 — Name, role, tagline */}
       <div className="px-5 pt-4 sm:px-6">
         <h1 className={nameClass}>{name}</h1>
         {profile.role ? <p className="mt-1 text-base font-medium tracking-wide text-accent">{profile.role}</p> : null}
@@ -192,7 +186,7 @@ export function CallingCard({
           <p className="mt-1.5 max-w-md text-sm leading-relaxed text-card-mute">{profile.tagline}</p>
         ) : null}
 
-        {/* 3. Focus tags */}
+        {/* Position 3 — Focus tags */}
         {profile.focus.length > 0 ? (
           <ul className="mt-3.5 flex flex-wrap gap-1.5">
             {profile.focus.map((tag) => (
@@ -206,7 +200,7 @@ export function CallingCard({
           </ul>
         ) : null}
 
-        {/* 4. Message banner */}
+        {/* Position 4 — Message banner */}
         {profile.scanMessage?.trim() ? (
           <div className="mt-3.5 flex items-center gap-2 rounded-xl border border-card-line bg-paper/60 px-3 py-2 text-sm text-card-fg">
             <WhatsAppIcon />
@@ -217,11 +211,11 @@ export function CallingCard({
 
       <div className="mx-5 mt-4 border-t border-card-line sm:mx-6" />
 
-      {/* 5. Showcase */}
+      {/* Position 5 — Showcase */}
       <ShowcaseStrip profile={profile} />
 
-      {/* 6. Contacts */}
-      <ul className="grid gap-2.5 px-5 py-3 sm:px-6">
+      {/* Position 6 — Contacts */}
+      <ul className="grid gap-2 px-5 py-3 sm:px-6">
         {profile.email ? (
           <Row href={`mailto:${profile.email}`} icon={<Mail className="size-4" />} label="Email" value={profile.email} />
         ) : null}
@@ -252,9 +246,9 @@ export function CallingCard({
         ) : null}
       </ul>
 
-      {/* 7. QR */}
+      {/* Position 7 — QR */}
       {qrValue ? (
-        <div className="flex flex-col items-center gap-1.5 px-5 pb-5 pt-1 sm:px-6">
+        <div className="flex flex-col items-center gap-2 px-5 pb-6 pt-2 sm:px-6">
           <QrMark value={qrValue} label={qrLabel || "QR code for this card"} />
           <p className="text-center text-sm font-medium text-accent">Scan to open full card + gallery</p>
           <p className="text-center text-xs text-card-mute">/{profile.username || "card"} · calling card</p>
