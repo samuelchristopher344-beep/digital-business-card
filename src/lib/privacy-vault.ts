@@ -80,24 +80,40 @@ export function listPrivateContacts(): PrivateContact[] {
   return readJson<PrivateContact[]>(CONTACTS_KEY, []).sort((a, b) => b.updatedAt - a.updatedAt);
 }
 
+/** Accepts full PrivateContact fields or legacy { key, name, ... } from older UI. */
 export function upsertPrivateContact(
-  input: Omit<PrivateContact, "id" | "createdAt" | "updatedAt"> & { id?: string },
+  input: Partial<PrivateContact> & {
+    id?: string;
+    key?: string;
+    name?: string;
+    slug?: string;
+    fullName?: string;
+    tag?: ContactTagId;
+    note?: string;
+    link?: string;
+    email?: string;
+    phone?: string;
+    metAt?: string;
+  },
 ): PrivateContact {
   const all = listPrivateContacts();
   const now = Date.now();
+  const slug = (input.slug || input.key || "").trim();
   const existing = input.id
     ? all.find((c) => c.id === input.id)
-    : all.find((c) => c.slug === input.slug && input.slug);
+    : slug
+      ? all.find((c) => c.slug === slug)
+      : undefined;
   const row: PrivateContact = {
     id: existing?.id || input.id || crypto.randomUUID(),
-    slug: input.slug,
-    fullName: input.fullName,
-    email: input.email,
-    phone: input.phone,
-    link: input.link,
-    tag: input.tag,
-    note: input.note,
-    metAt: input.metAt,
+    slug: slug || existing?.slug || "",
+    fullName: (input.fullName || input.name || existing?.fullName || "").trim(),
+    email: (input.email ?? existing?.email ?? "").trim(),
+    phone: (input.phone ?? existing?.phone ?? "").trim(),
+    link: (input.link ?? existing?.link ?? "").trim(),
+    tag: input.tag || existing?.tag || "peer",
+    note: input.note ?? existing?.note ?? "",
+    metAt: input.metAt ?? existing?.metAt ?? "",
     createdAt: existing?.createdAt || now,
     updatedAt: now,
   };
@@ -169,13 +185,11 @@ export function listLoginAlerts(): LoginAlert[] {
   return readJson<LoginAlert[]>(ALERTS_KEY, []).sort((a, b) => b.at - a.at);
 }
 
-/** Record a sign-in style alert on this device (local only until server email is wired). */
 export function recordLoginAlert(summary?: string) {
   if (typeof window === "undefined") return;
   if (!loginAlertsEnabled()) return;
   const ua = navigator.userAgent.slice(0, 180);
   const last = listLoginAlerts()[0];
-  // Avoid spam: skip if same UA within 2 hours
   if (last && last.userAgent === ua && Date.now() - last.at < 2 * 60 * 60 * 1000) return;
   const entry: LoginAlert = {
     id: crypto.randomUUID(),
