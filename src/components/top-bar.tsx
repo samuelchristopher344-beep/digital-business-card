@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { CreditCard, Moon, ScanLine, Settings, Sun } from "lucide-react";
+import { CreditCard, Moon, ScanLine, Settings, Sun, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   applyTheme,
@@ -61,13 +61,20 @@ export function TopBar({ title = "Calling Card" }: { title?: string }) {
           </Link>
 
           <nav className="hidden items-center gap-1 sm:flex" aria-label="Main">
-            <Link to="/create" className={navClass(pathname.startsWith("/create") || pathname.startsWith("/edit"))}>
+            <Link
+              to="/create"
+              className={navClass(pathname.startsWith("/create") || pathname.startsWith("/edit"))}
+            >
               <CreditCard className="size-3.5" aria-hidden="true" />
               My card
             </Link>
             <Link to="/scan" className={navClass(pathname.startsWith("/scan"))}>
               <ScanLine className="size-3.5" aria-hidden="true" />
               Scan
+            </Link>
+            <Link to="/contacts" className={navClass(pathname.startsWith("/contacts"))}>
+              <Users className="size-3.5" aria-hidden="true" />
+              People
             </Link>
             <Link to="/cards" className={navClass(pathname.startsWith("/cards"))}>
               Cards
@@ -104,9 +111,8 @@ export function TopBar({ title = "Calling Card" }: { title?: string }) {
         </div>
       </div>
 
-      {/* Mobile app tab bar under header */}
       <nav
-        className="flex border-t border-zinc-100 px-2 py-1.5 sm:hidden dark:border-zinc-900"
+        className="flex border-t border-zinc-100 px-1 py-1.5 sm:hidden dark:border-zinc-900"
         aria-label="App"
       >
         <Link
@@ -132,14 +138,14 @@ export function TopBar({ title = "Calling Card" }: { title?: string }) {
           Scan
         </Link>
         <Link
-          to="/cards"
+          to="/contacts"
           className={
             "flex flex-1 flex-col items-center gap-0.5 rounded-xl py-1.5 text-[11px] font-medium " +
-            (pathname.startsWith("/cards") ? "text-zinc-900 dark:text-zinc-50" : "text-zinc-500")
+            (pathname.startsWith("/contacts") ? "text-zinc-900 dark:text-zinc-50" : "text-zinc-500")
           }
         >
-          <span className="grid size-5 place-items-center text-base leading-none">⧉</span>
-          Cards
+          <Users className="size-5" />
+          People
         </Link>
         <Link
           to="/settings"
